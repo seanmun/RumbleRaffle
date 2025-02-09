@@ -1,0 +1,29 @@
+{
+  "name": "rumble-raffle-backend",
+  "version": "1.0.0",
+  "description": "Backend for Rumble Raffle",
+  "main": "server.ts",
+  "scripts": {
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "dev": "TS_NODE_TRANSPILE_ONLY=true ts-node server.ts"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "@types/node": "^18.0.0",
+    "@types/express": "^4.17.15",
+    "@types/cors": "^2.8.12",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [],
+  "author": "Your Name",
+  "license": "MIT"
+}
