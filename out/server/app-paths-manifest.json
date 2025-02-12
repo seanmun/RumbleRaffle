@@ -1,0 +1,5 @@
+{
+  "/create-league/page": "app/create-league/page.js",
+  "/raffle-room/page": "app/raffle-room/page.js",
+  "/live-tracker/page": "app/live-tracker/page.js"
+}
