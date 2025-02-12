@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // This tells Next.js to generate static files
-  distDir: 'out', // This is where the static files will be stored
+  output: "export", // Ensures static export
+  distDir: "docs",  // Saves output to /docs for GitHub Pages
+  images: {
+    unoptimized: true, // Fix for image issues on GitHub Pages
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

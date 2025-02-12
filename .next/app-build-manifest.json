@@ -15,6 +15,13 @@
       "static/css/fd15441ca66dc120.css",
       "static/chunks/app/layout-1d80e7aa3f78aa18.js"
     ],
+    "/create-league/page": [
+      "static/chunks/webpack-29ebadaebe2fcb3f.js",
+      "static/chunks/4bd1b696-dc53661a9e7a1ea0.js",
+      "static/chunks/517-28743238e254ff08.js",
+      "static/chunks/main-app-1eb1b7aee61704b2.js",
+      "static/chunks/app/create-league/page-4fba4e92bc42b9b8.js"
+    ],
     "/leagues/page": [
       "static/chunks/webpack-29ebadaebe2fcb3f.js",
       "static/chunks/4bd1b696-dc53661a9e7a1ea0.js",
@@ -42,13 +49,6 @@
       "static/chunks/517-28743238e254ff08.js",
       "static/chunks/main-app-1eb1b7aee61704b2.js",
       "static/chunks/app/raffle-room/page-fe99adbb66aeb027.js"
-    ],
-    "/create-league/page": [
-      "static/chunks/webpack-29ebadaebe2fcb3f.js",
-      "static/chunks/4bd1b696-dc53661a9e7a1ea0.js",
-      "static/chunks/517-28743238e254ff08.js",
-      "static/chunks/main-app-1eb1b7aee61704b2.js",
-      "static/chunks/app/create-league/page-4fba4e92bc42b9b8.js"
     ]
   }
 }
