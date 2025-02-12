@@ -15,7 +15,6 @@ interface Entrant {
 export default function LiveTracker() {
   const [entrants, setEntrants] = useState<Entrant[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedWrestler, setSelectedWrestler] = useState<Wrestler | null>(null);
   const [searchResults, setSearchResults] = useState<Wrestler[]>([]);
   const [activeEntrant, setActiveEntrant] = useState<number | null>(null);
 

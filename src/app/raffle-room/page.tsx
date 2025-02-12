@@ -39,7 +39,7 @@ export default function RaffleRoom() {
   }, []);
 
   const generateEntrants = (participants: Participant[]) => {
-    let entrantList: string[] = [];
+    const entrantList: string[] = [];
     participants.forEach((p) => {
       for (let i = 1; i <= p.entrants; i++) {
         entrantList.push(`${p.name} ${i}`);
