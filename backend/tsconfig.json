@@ -1,15 +1,16 @@
 {
-    "compilerOptions": {
-      "target": "ESNext",
-      "module": "CommonJS",
-      "moduleResolution": "Node",
-      "outDir": "dist",
-      "rootDir": "./",
-      "strict": true,
-      "esModuleInterop": true,
-      "forceConsistentCasingInFileNames": true,
-      "skipLibCheck": true
-    },
-    "include": ["server.ts"]
-  }
-  
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "dist",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "allowJs": true, // <-- Allows JavaScript files in case Vercel needs it
+    "resolveJsonModule": true // <-- Enables importing JSON files if needed
+  },
+  "include": ["server.ts", "api.js"] // <-- Make sure API entry point is included
+}
