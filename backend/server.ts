@@ -2,8 +2,6 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
-const PORT = 5050;
-
 app.use(cors());
 app.use(express.json());
 
@@ -64,7 +62,5 @@ app.get("/league/:id", (req, res) => {
   res.json(league);
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`RumbleRaffle Backend is Running on port ${PORT}! 🎉`);
-});
+// Export Express app (Required for Vercel)
+export default app;
