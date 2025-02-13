@@ -9,8 +9,8 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "allowJs": true, // <-- Allows JavaScript files in case Vercel needs it
-    "resolveJsonModule": true // <-- Enables importing JSON files if needed
+    "allowJs": true,
+    "resolveJsonModule": true
   },
-  "include": ["server.ts", "api.js"] // <-- Make sure API entry point is included
+  "include": ["**/*.ts"] // <-- This ensures all TypeScript files are compiled
 }

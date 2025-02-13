@@ -7,11 +7,12 @@ export default function Home() {
   const router = useRouter(); // Initialize router
 
   useEffect(() => {
-    fetch("http://localhost:5050")
+    fetch("http://localhost:4000") // 🔥 Change 5050 → 4000
       .then((res) => res.text())
       .then((data) => setMessage(data))
       .catch(() => setMessage("Failed to connect to backend"));
   }, []);
+  
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center p-6">

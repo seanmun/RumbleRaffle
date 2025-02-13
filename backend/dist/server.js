@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const app = (0, express_1.default)();
-const PORT = 5050;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 // Temporary in-memory storage for leagues
@@ -43,7 +42,5 @@ app.get("/league/:id", (req, res) => {
     }
     res.json(league);
 });
-// Start Server
-app.listen(PORT, () => {
-    console.log(`RumbleRaffle Backend is Running on port ${PORT}! 🎉`);
-});
+// Export Express app (Required for Vercel)
+exports.default = app;

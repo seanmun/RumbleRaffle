@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter
+import { useRouter } from "next/navigation";
 
 export default function CreateLeague() {
   const router = useRouter();
@@ -9,6 +9,8 @@ export default function CreateLeague() {
   const [numParticipants, setNumParticipants] = useState(2);
   const [participants, setParticipants] = useState<{ name: string; entrants: number }[]>([]);
   const [remainingEntrants, setRemainingEntrants] = useState(0);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL; // ✅ Use environment variable
 
   useEffect(() => {
     if (step === 2) {
@@ -54,19 +56,28 @@ export default function CreateLeague() {
       return;
     }
 
-    const response = await fetch("http://localhost:5050/create-league", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ leagueName, participants }),
-    });
+    try {
+      const response = await fetch(`${API_URL}/create-league`, { // ✅ Dynamically use API URL
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leagueName, participants }),
+      });
 
-    const data = await response.json();
-    localStorage.setItem("currentLeague", JSON.stringify(participants));
-    localStorage.setItem("currentLeagueName", JSON.stringify(leagueName)); // Store as a string
-    
-    alert(`League Created! ID: ${data.leagueId}`);
+      if (!response.ok) {
+        throw new Error("Failed to create league");
+      }
 
-    router.push("/raffle-room"); // Navigate to Raffle Room
+      const data = await response.json();
+      localStorage.setItem("currentLeague", JSON.stringify(participants));
+      localStorage.setItem("currentLeagueName", JSON.stringify(leagueName));
+
+      alert(`League Created! ID: ${data.leagueId}`);
+      router.push("/raffle-room");
+
+    } catch (error) {
+      console.error("Error creating league:", error);
+      alert("Failed to create league. Please try again.");
+    }
   };
 
   return (
@@ -111,7 +122,6 @@ export default function CreateLeague() {
         <form onSubmit={handleSubmit} className="w-96 bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-yellow-400 mb-4">Assign Entrants</h2>
 
-          {/* Admin Notes */}
           <div className="bg-gray-700 text-gray-300 p-3 rounded-md mb-4 text-sm">
             <p>
               Each participant has been automatically assigned <b>{Math.floor(30 / numParticipants)}</b> entrants.
@@ -121,7 +131,6 @@ export default function CreateLeague() {
             </p>
           </div>
 
-          {/* Header Row */}
           <div className="grid grid-cols-[3fr_1fr] gap-4 text-gray-400 text-sm mb-2">
             <span>Participants</span>
             <span>Entrants</span>
@@ -132,8 +141,6 @@ export default function CreateLeague() {
               <input
                 type="text"
                 value={participant.name}
-                onFocus={(e) => e.target.value === `Participant ${index + 1}` && (e.target.value = "")}
-                onBlur={(e) => e.target.value.trim() === "" && (e.target.value = `Participant ${index + 1}`)}
                 onChange={(e) => handleParticipantChange(index, "name", e.target.value)}
                 className="p-2 bg-gray-700 border border-gray-600 rounded w-full"
                 required
@@ -152,7 +159,6 @@ export default function CreateLeague() {
             </div>
           ))}
 
-          {/* Entrant Counter */}
           <p className={`mt-4 text-sm ${remainingEntrants === 0 ? "text-green-400" : "text-red-400"}`}>
             Entrants Assigned: {30 - remainingEntrants} / 30
           </p>

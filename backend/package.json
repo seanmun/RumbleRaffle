@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dist/server.js",
     "build": "tsc",
-    "dev": "TS_NODE_TRANSPILE_ONLY=true ts-node server.ts"
+    "dev": "nodemon --exec ts-node server.ts"
   },
   "dependencies": {
     "@vercel/node": "^5.1.3",
