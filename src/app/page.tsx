@@ -6,13 +6,15 @@ export default function Home() {
   const [message, setMessage] = useState("Loading...");
   const router = useRouter(); // Initialize router
 
+  // ✅ Dynamically set the API URL (works for both local & Vercel)
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://rumble-raffle.vercel.app";
+
   useEffect(() => {
-    fetch("http://localhost:4000") // 🔥 Change 5050 → 4000
+    fetch(`${API_URL}/api/test`) // ✅ Now dynamically fetches from the correct backend URL
       .then((res) => res.text())
       .then((data) => setMessage(data))
       .catch(() => setMessage("Failed to connect to backend"));
   }, []);
-  
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center p-6">
@@ -29,16 +31,13 @@ export default function Home() {
       >
         Create a League
       </button>
-      
-      <button
-  onClick={() => router.push("/leagues")}
-  className="mt-4 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-500 transition"
->
-  View Leagues
-</button>
 
-      
-      
+      <button
+        onClick={() => router.push("/leagues")}
+        className="mt-4 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-500 transition"
+      >
+        View Leagues
+      </button>
     </main>
   );
 }
