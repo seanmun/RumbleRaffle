@@ -36,27 +36,28 @@ app.get("/", (req, res) => {
 });
 
 // Create League Route
-app.post("/create-league", (req, res) => {
+app.post("/api/create-league", (req, res) => {
   const { leagueName, participants } = req.body;
 
   if (!leagueName || !participants || participants.length < 2) {
     return res.status(400).json({ error: "Invalid league data" });
   }
 
-  const totalEntrants = participants.reduce((sum: number, p: Participant) => sum + p.entrants, 0);
+  const totalEntrants = participants.reduce((sum: number, p: { name: string; entrants: number }) => sum + p.entrants, 0);
   if (totalEntrants !== 30) {
     return res.status(400).json({ error: "Total entrants must be exactly 30" });
   }
 
   const leagueId = Math.random().toString(36).substr(2, 9);
 
-  // Store league in memory
+  // Store league in memory (temporary storage)
   leagues[leagueId] = { leagueId, leagueName, participants };
 
   console.log("New League Created:", leagues[leagueId]);
 
   res.json({ message: "League Created!", leagueId });
 });
+
 
 // Get All Leagues
 app.get("/leagues", (req, res) => {

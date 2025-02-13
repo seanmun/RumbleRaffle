@@ -10,7 +10,7 @@ export default function CreateLeague() {
   const [participants, setParticipants] = useState<{ name: string; entrants: number }[]>([]);
   const [remainingEntrants, setRemainingEntrants] = useState(0);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL; // ✅ Use environment variable
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://rumble-raffle.vercel.app";
 
   useEffect(() => {
     if (step === 2) {
@@ -57,7 +57,7 @@ export default function CreateLeague() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/create-league`, { // ✅ Dynamically use API URL
+      const response = await fetch(`${API_URL}/api/create-league`, { // ✅ Fix path by adding `/api/`
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leagueName, participants }),
