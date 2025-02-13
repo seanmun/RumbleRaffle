@@ -6,7 +6,7 @@
   "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
   "dev:frontend": "next dev",
   "dev:backend": "cd backend && npm run dev",
-  "build": "npm run build:frontend && npm run build:backend",
+  "build": "next build && echo 'rumbleraffle.com' > docs/CNAME",
   "build:frontend": "next build",
   "build:backend": "cd backend && npm run build"
 },
