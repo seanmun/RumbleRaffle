@@ -5,18 +5,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Root Route
+// Example API route
 app.get("/", (req, res) => {
   res.send("RumbleRaffle Backend is Running! 🎉");
 });
 
-// Check if running locally, then start the server
-if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running locally on port ${PORT}`);
-  });
-}
+app.get("/api/test", (req, res) => {
+  res.json({ message: "API is working!" });
+});
+
 
 // Define Types
 interface Participant {
