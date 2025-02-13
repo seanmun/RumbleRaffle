@@ -10,10 +10,10 @@ export default function Home() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://rumble-raffle.vercel.app";
 
   useEffect(() => {
-    fetch(`${API_URL}/api/test`) // ✅ Now dynamically fetches from the correct backend URL
-      .then((res) => res.text())
-      .then((data) => setMessage(data))
-      .catch(() => setMessage("Failed to connect to backend"));
+    fetch(`${API_URL}/api/test`)
+      .then((res) => res.json()) // ✅ Parse JSON instead of displaying raw response
+      .then((data) => setMessage(data.message)) // ✅ Extract the message property
+      .catch(() => setMessage("⚠️ Failed to connect to the backend"));
   }, []);
 
   return (
@@ -22,7 +22,7 @@ export default function Home() {
       <p className="mt-4 text-xl text-gray-300">The ultimate Royal Rumble betting experience.</p>
 
       <div className="mt-6 p-4 bg-gray-800 rounded-lg shadow-md">
-        <p className="text-green-400 text-lg">{message}</p>
+        <p className="text-green-400 text-lg">{message}</p> {/* ✅ Now displays a clean message */}
       </div>
 
       <button
