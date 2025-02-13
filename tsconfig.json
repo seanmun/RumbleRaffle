@@ -35,7 +35,7 @@
     "next-env.d.ts",
     "out/types/**/*.ts",
     "docs/types/**/*.ts"
-  ],
+, "backend/api.js"  ],
   "exclude": [
     "node_modules"
   ]
