@@ -86,6 +86,9 @@ function LiveTrackerContent() {
     }
   };
 
+  console.log("Fetching from API:", process.env.NEXT_PUBLIC_API_URL ?? "⚠️ API URL not found!");
+
+  
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
       <h1 className="text-4xl font-bold text-yellow-400">Live Tracker</h1>

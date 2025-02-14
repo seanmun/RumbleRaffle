@@ -1,6 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: "export",  // Enables static site export
   distDir: "docs",   // Ensures build goes into /docs
   images: {
     unoptimized: true,  // Fixes image loading issues
