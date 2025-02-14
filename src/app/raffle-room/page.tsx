@@ -1,10 +1,19 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
+// 🔹 Suspense wrapper for useSearchParams()
 export default function RaffleRoom() {
+  return (
+    <Suspense fallback={<div className="text-gray-400">Loading raffle room...</div>}>
+      <RaffleRoomContent />
+    </Suspense>
+  );
+}
+
+function RaffleRoomContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const leagueId = searchParams.get("leagueId");
@@ -17,7 +26,6 @@ export default function RaffleRoom() {
   const [participants, setParticipants] = useState<{ name: string; entrants: number }[]>([]);
   const [shuffledEntrants, setShuffledEntrants] = useState<string[]>([]);
 
-  // ✅ Fetch participants from the backend & localStorage
   useEffect(() => {
     if (!leagueId) return;
 
@@ -29,7 +37,6 @@ export default function RaffleRoom() {
         }
       })
       .catch(() => {
-        // Load from localStorage if fetch fails
         const storedParticipants = localStorage.getItem("currentParticipants");
         if (storedParticipants) {
           setParticipants(JSON.parse(storedParticipants));
@@ -37,7 +44,6 @@ export default function RaffleRoom() {
       });
   }, [leagueId]);
 
-  // ✅ Generate a shuffled list of entrants when participants change
   useEffect(() => {
     if (participants.length > 0) {
       const generatedEntrants = participants
@@ -57,7 +63,7 @@ export default function RaffleRoom() {
       if (index < 30) {
         setSlots((prevSlots) => {
           const newSlots = [...prevSlots];
-          newSlots[index] = shuffledEntrants[index]; // Assign correct participant
+          newSlots[index] = shuffledEntrants[index];
           return newSlots;
         });
         setCurrentIndex(index + 1);
@@ -80,7 +86,6 @@ export default function RaffleRoom() {
     saveRaffleResults();
   };
 
-  // ✅ Save raffle results to backend
   const saveRaffleResults = async () => {
     if (!leagueId || shuffledEntrants.length !== 30) return;
 
@@ -100,7 +105,6 @@ export default function RaffleRoom() {
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
       <h1 className="text-4xl font-bold text-yellow-400 mb-4">Raffle Room</h1>
 
-      {/* Raffle Buttons */}
       {!raffleStarted ? (
         <div className="mb-6 flex gap-4">
           <button
@@ -120,9 +124,7 @@ export default function RaffleRoom() {
         <p className="mb-6 text-gray-300">Assigning entrants... {currentIndex} / 30</p>
       )}
 
-      {/* Layout: Left (Raffle Slots) | Right (Participant List) */}
       <div className="grid grid-cols-2 gap-8 mt-6">
-        {/* Left Side: Raffle Slots */}
         <div className="grid grid-cols-5 gap-4">
           {slots.map((entrant, index) => (
             <div
@@ -137,7 +139,6 @@ export default function RaffleRoom() {
           ))}
         </div>
 
-        {/* Right Side: List of Participants */}
         <div className="bg-gray-800 p-4 rounded-lg shadow-md max-h-[600px] overflow-y-auto">
           <h2 className="text-xl font-bold text-yellow-400 mb-2">Participants</h2>
           <ul className="text-gray-300">
@@ -150,7 +151,6 @@ export default function RaffleRoom() {
         </div>
       </div>
 
-      {/* Button to Go to Live Tracker After Raffle Completes */}
       {isRaffleComplete && (
         <button
           onClick={() => router.push(`/live-tracker?leagueId=${leagueId}`)}

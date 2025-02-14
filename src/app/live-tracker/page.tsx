@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { ToggleLeft, ToggleRight, Pencil } from "lucide-react";
 import WrestlerSearch from "@/components/WrestlerSearch";
@@ -11,12 +11,21 @@ interface Entrant {
   status: "Active" | "Eliminated";
 }
 
+// 🔹 Wrapper Component with Suspense to handle useSearchParams
 export default function LiveTracker() {
+  return (
+    <Suspense fallback={<div className="text-gray-400">Loading live tracker...</div>}>
+      <LiveTrackerContent />
+    </Suspense>
+  );
+}
+
+function LiveTrackerContent() {
   const searchParams = useSearchParams();
   const leagueId = searchParams.get("leagueId");
 
   const [entrants, setEntrants] = useState<Entrant[]>([]);
-  const [editingEntrant, setEditingEntrant] = useState<number | null>(null); // Track which entrant is being edited
+  const [editingEntrant, setEditingEntrant] = useState<number | null>(null);
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   useEffect(() => {
@@ -38,16 +47,15 @@ export default function LiveTracker() {
     }
   }, [leagueId, API_URL]);
 
-  // ✅ Fixed toggleStatus (correct async syntax)
   const toggleStatus = async (entrantNumber: number) => {
-    const updatedEntrants: Entrant[] = entrants.map((entrant: Entrant) =>
+    const updatedEntrants: Entrant[] = entrants.map((entrant) =>
       entrant.number === entrantNumber
         ? { ...entrant, status: entrant.status === "Active" ? "Eliminated" : "Active" }
         : entrant
     );
-  
+
     setEntrants(updatedEntrants);
-  
+
     try {
       await fetch(`${API_URL}/live-tracker/toggle-status`, {
         method: "PATCH",
@@ -58,9 +66,7 @@ export default function LiveTracker() {
       console.error("❌ Failed to update status:", error);
     }
   };
-  
 
-  // ✅ Fixed updateWrestlerName (updates state properly)
   const updateWrestlerName = async (entrantNumber: number, newName: string) => {
     const updatedEntrants = entrants.map((entrant) =>
       entrant.number === entrantNumber ? { ...entrant, name: newName } : entrant
@@ -105,16 +111,15 @@ export default function LiveTracker() {
                 <td className="p-3">{entrant.number}</td>
                 <td className="p-3">{entrant.participant}</td>
                 <td className="p-3">
-                    {editingEntrant === entrant.number ? (
-                      <WrestlerSearch 
-                        onSelect={(name) => updateWrestlerName(entrant.number, name)} 
-                        onClose={() => setEditingEntrant(null)} // ✅ Close when a wrestler is selected
-                      />
-                    ) : (
-                      entrant.name
-                    )}
-                  </td>
-
+                  {editingEntrant === entrant.number ? (
+                    <WrestlerSearch 
+                      onSelect={(name) => updateWrestlerName(entrant.number, name)}
+                      onClose={() => setEditingEntrant(null)} 
+                    />
+                  ) : (
+                    entrant.name
+                  )}
+                </td>
                 <td className="p-3">
                   <button onClick={() => toggleStatus(entrant.number)} className="focus:outline-none">
                     {entrant.status === "Active" ? (

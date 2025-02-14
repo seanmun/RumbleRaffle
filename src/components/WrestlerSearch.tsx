@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export default function WrestlerSearch({ onSelect }: { onSelect: (name: string) => void }) {
+interface WrestlerSearchProps {
+  onSelect: (name: string) => void;
+  onClose?: () => void; // ✅ Added optional onClose prop
+}
+
+export default function WrestlerSearch({ onSelect, onClose }: WrestlerSearchProps) {
   const [query, setQuery] = useState("");
   const [filteredWrestlers, setFilteredWrestlers] = useState<string[]>([]);
   const [allWrestlers, setAllWrestlers] = useState<string[]>([]);
@@ -23,6 +28,11 @@ export default function WrestlerSearch({ onSelect }: { onSelect: (name: string) 
     );
   }, [query, allWrestlers]);
 
+  const handleSelect = (wrestler: string) => {
+    onSelect(wrestler);
+    if (onClose) onClose(); // ✅ Close the search if onClose is provided
+  };
+
   return (
     <div className="relative w-full">
       <input
@@ -37,7 +47,7 @@ export default function WrestlerSearch({ onSelect }: { onSelect: (name: string) 
           {filteredWrestlers.map((wrestler, index) => (
             <li
               key={index}
-              onClick={() => onSelect(wrestler)}
+              onClick={() => handleSelect(wrestler)}
               className="p-2 hover:bg-gray-700 cursor-pointer"
             >
               {wrestler}
