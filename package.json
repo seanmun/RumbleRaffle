@@ -2,15 +2,16 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-"scripts": {
-  "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-  "dev:frontend": "next dev",
-  "dev:backend": "cd backend && npm run dev",
-  "build": "next build && echo 'rumbleraffle.com' > docs/CNAME",
-  "build:frontend": "next build",
-  "build:backend": "cd backend && npm run build"
-},
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "next dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "next build && echo 'rumbleraffle.com' > docs/CNAME",
+    "build:frontend": "next build",
+    "build:backend": "cd backend && npm run build"
+  },
   "dependencies": {
+    "lucide-react": "^0.475.0",
     "next": "^15.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

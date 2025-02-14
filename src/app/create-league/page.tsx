@@ -9,8 +9,9 @@ export default function CreateLeague() {
   const [numParticipants, setNumParticipants] = useState(2);
   const [participants, setParticipants] = useState<{ name: string; entrants: number }[]>([]);
   const [remainingEntrants, setRemainingEntrants] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://rumble-raffle.vercel.app";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   useEffect(() => {
     if (step === 2) {
@@ -51,33 +52,41 @@ export default function CreateLeague() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
     if (remainingEntrants !== 0) {
       alert(`Total entrants must be exactly 30. Adjust by ${remainingEntrants > 0 ? "adding" : "removing"} ${Math.abs(remainingEntrants)} entrants.`);
+      setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/api/create-league`, { // ✅ Fix path by adding `/api/`
+      console.log("📡 Sending Create League Request to:", `${API_URL}/create-league`);
+      
+      const response = await fetch(`${API_URL}/create-league`, { // 🔥 Ensure correct API path
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leagueName, participants }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to create league");
-      }
-
       const data = await response.json();
-      localStorage.setItem("currentLeague", JSON.stringify(participants));
-      localStorage.setItem("currentLeagueName", JSON.stringify(leagueName));
+      console.log("✅ Response from Server:", data);
 
-      alert(`League Created! ID: ${data.leagueId}`);
-      router.push("/raffle-room");
+      if (data.leagueId) {
+        localStorage.setItem("currentLeagueId", data.leagueId);
+        localStorage.setItem("currentParticipants", JSON.stringify(participants));
 
+        alert(`League Created! ID: ${data.leagueId}`);
+        router.push(`/raffle-room?leagueId=${data.leagueId}`);
+      } else {
+        alert("⚠️ Error creating league. Please try again.");
+      }
     } catch (error) {
-      console.error("Error creating league:", error);
-      alert("Failed to create league. Please try again.");
+      console.error("🚨 Create League Failed:", error);
+      alert("⚠️ Network error. Please check the console for details.");
     }
+
+    setLoading(false);
   };
 
   return (
@@ -123,12 +132,8 @@ export default function CreateLeague() {
           <h2 className="text-2xl font-bold text-yellow-400 mb-4">Assign Entrants</h2>
 
           <div className="bg-gray-700 text-gray-300 p-3 rounded-md mb-4 text-sm">
-            <p>
-              Each participant has been automatically assigned <b>{Math.floor(30 / numParticipants)}</b> entrants.
-            </p>
-            <p>
-              There are <b>{remainingEntrants}</b> entrants left to distribute. Adjust as needed.
-            </p>
+            <p>Each participant has been automatically assigned <b>{Math.floor(30 / numParticipants)}</b> entrants.</p>
+            <p>There are <b>{remainingEntrants}</b> entrants left to distribute. Adjust as needed.</p>
           </div>
 
           <div className="grid grid-cols-[3fr_1fr] gap-4 text-gray-400 text-sm mb-2">
@@ -163,8 +168,14 @@ export default function CreateLeague() {
             Entrants Assigned: {30 - remainingEntrants} / 30
           </p>
 
-          <button type="submit" className="w-full bg-green-600 text-white py-2 rounded mt-4 hover:bg-green-500">
-            Create League
+          <button
+            type="submit"
+            className={`w-full py-2 rounded mt-4 transition ${
+              loading ? "bg-gray-600 cursor-not-allowed" : "bg-green-600 hover:bg-green-500"
+            }`}
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create League"}
           </button>
         </form>
       )}

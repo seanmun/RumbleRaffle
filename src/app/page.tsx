@@ -7,14 +7,20 @@ export default function Home() {
   const router = useRouter(); // Initialize router
 
   // ✅ Dynamically set the API URL (works for both local & Vercel)
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://rumble-raffle.vercel.app";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   useEffect(() => {
-    fetch(`${API_URL}/api/test`)
-      .then((res) => res.json()) // ✅ Parse JSON instead of displaying raw response
-      .then((data) => setMessage(data.message)) // ✅ Extract the message property
+    fetch(`${API_URL}/test`) // ✅ Removed `/api/`
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.message) {
+          setMessage("✅ Backend is connected!");
+        } else {
+          throw new Error("Invalid response");
+        }
+      })
       .catch(() => setMessage("⚠️ Failed to connect to the backend"));
-  }, []);
+  }, [API_URL]); // ✅ Now React will re-run the effect if API_URL changes
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center p-6">
@@ -22,7 +28,9 @@ export default function Home() {
       <p className="mt-4 text-xl text-gray-300">The ultimate Royal Rumble betting experience.</p>
 
       <div className="mt-6 p-4 bg-gray-800 rounded-lg shadow-md">
-        <p className="text-green-400 text-lg">{message}</p> {/* ✅ Now displays a clean message */}
+        <p className={`text-lg ${message.includes("✅") ? "text-green-400" : "text-red-400"}`}>
+          {message}
+        </p>
       </div>
 
       <button

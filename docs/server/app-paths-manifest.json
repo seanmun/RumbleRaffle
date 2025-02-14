@@ -2,5 +2,6 @@
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/page": "app/page.js",
   "/create-league/page": "app/create-league/page.js",
-  "/raffle-room/page": "app/raffle-room/page.js"
+  "/raffle-room/page": "app/raffle-room/page.js",
+  "/live-tracker/page": "app/live-tracker/page.js"
 }

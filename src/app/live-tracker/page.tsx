@@ -1,127 +1,145 @@
 "use client";
 import { useState, useEffect } from "react";
-
-interface Wrestler {
-  name: string;
-  image: string;
-}
+import { useSearchParams } from "next/navigation";
+import { ToggleLeft, ToggleRight, Pencil } from "lucide-react";
+import WrestlerSearch from "@/components/WrestlerSearch";
 
 interface Entrant {
   number: number;
   participant: string;
-  wrestler?: Wrestler | null;
+  name: string;
+  status: "Active" | "Eliminated";
 }
 
 export default function LiveTracker() {
+  const searchParams = useSearchParams();
+  const leagueId = searchParams.get("leagueId");
+
   const [entrants, setEntrants] = useState<Entrant[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<Wrestler[]>([]);
-  const [activeEntrant, setActiveEntrant] = useState<number | null>(null);
+  const [editingEntrant, setEditingEntrant] = useState<number | null>(null); // Track which entrant is being edited
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   useEffect(() => {
-    const storedEntrants = localStorage.getItem("liveTrackerEntrants");
-    if (storedEntrants) {
-      setEntrants(JSON.parse(storedEntrants));
-    } else {
-      const initialEntrants = Array.from({ length: 30 }, (_, i) => ({
-        number: i + 1,
-        participant: `Participant ${i + 1}`,
-        wrestler: null,
-      }));
-      setEntrants(initialEntrants);
-      localStorage.setItem("liveTrackerEntrants", JSON.stringify(initialEntrants));
+    if (leagueId) {
+      fetch(`${API_URL}/live-tracker?leagueId=${leagueId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            setEntrants(data);
+          } else {
+            console.error("🚨 Invalid data format:", data);
+            setEntrants([]);
+          }
+        })
+        .catch((error) => {
+          console.error("❌ Failed to load live tracker data:", error);
+          setEntrants([]);
+        });
     }
-  }, []);
+  }, [leagueId, API_URL]);
 
-  const handleWrestlerClick = (index: number) => {
-    setActiveEntrant(index);
-  };
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    // Simulated wrestler database search (replace with real API later)
-    const wrestlers = [
-      { name: "John Cena", image: "/images/cena.jpg" },
-      { name: "The Rock", image: "/images/rock.jpg" },
-      { name: "Stone Cold Steve Austin", image: "/images/austin.jpg" },
-      { name: "Triple H", image: "/images/hhh.jpg" },
-      { name: "Roman Reigns", image: "/images/reigns.jpg" },
-    ];
-    setSearchResults(
-      wrestlers.filter((w) => w.name.toLowerCase().includes(e.target.value.toLowerCase()))
+  // ✅ Fixed toggleStatus (correct async syntax)
+  const toggleStatus = async (entrantNumber: number) => {
+    const updatedEntrants: Entrant[] = entrants.map((entrant: Entrant) =>
+      entrant.number === entrantNumber
+        ? { ...entrant, status: entrant.status === "Active" ? "Eliminated" : "Active" }
+        : entrant
     );
+  
+    setEntrants(updatedEntrants);
+  
+    try {
+      await fetch(`${API_URL}/live-tracker/toggle-status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leagueId, entrantNumber }),
+      });
+    } catch (error) {
+      console.error("❌ Failed to update status:", error);
+    }
   };
+  
 
-  const selectWrestler = (wrestler: Wrestler) => {
-    if (activeEntrant !== null) {
-      const updatedEntrants = [...entrants];
-      updatedEntrants[activeEntrant].wrestler = wrestler;
-      setEntrants(updatedEntrants);
-      localStorage.setItem("liveTrackerEntrants", JSON.stringify(updatedEntrants));
-      setActiveEntrant(null);
-      setSearchTerm("");
-      setSearchResults([]);
+  // ✅ Fixed updateWrestlerName (updates state properly)
+  const updateWrestlerName = async (entrantNumber: number, newName: string) => {
+    const updatedEntrants = entrants.map((entrant) =>
+      entrant.number === entrantNumber ? { ...entrant, name: newName } : entrant
+    );
+
+    setEntrants(updatedEntrants);
+    setEditingEntrant(null);
+
+    try {
+      await fetch(`${API_URL}/live-tracker/update-wrestler`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leagueId, entrantNumber, newName }),
+      });
+    } catch (error) {
+      console.error("❌ Failed to update wrestler name:", error);
     }
   };
 
   return (
-    <main className="flex flex-col items-center min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-4xl font-bold text-yellow-400 mb-6">Royal Rumble Live Tracker</h1>
+    <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
+      <h1 className="text-4xl font-bold text-yellow-400">Live Tracker</h1>
+      <p className="mt-2 text-gray-300">Tracking the action for your league!</p>
 
-      <div className="grid grid-cols-3 gap-4 w-full max-w-4xl">
-        <div className="text-gray-400">Entrant #</div>
-        <div className="text-gray-400">Participant</div>
-        <div className="text-gray-400">Wrestler</div>
-
-        {entrants.map((entrant, index) => (
-          <div key={index} className="grid grid-cols-3 gap-4 items-center">
-            <span className="text-gray-300">{entrant.number}</span>
-            <span className="text-gray-300">{entrant.participant}</span>
-            {entrant.wrestler ? (
-              <span className="text-white">{entrant.wrestler.name}</span>
-            ) : (
-              <button
-                onClick={() => handleWrestlerClick(index)}
-                className="p-2 bg-gray-700 rounded text-gray-400"
+      <table className="mt-6 w-full max-w-2xl border-collapse border border-gray-700 text-left">
+        <thead>
+          <tr className="bg-gray-800 text-yellow-400">
+            <th className="p-3 border border-gray-700">#</th>
+            <th className="p-3 border border-gray-700">Participant</th>
+            <th className="p-3 border border-gray-700">Wrestler Name</th>
+            <th className="p-3 border border-gray-700">Status</th>
+            <th className="p-3 border border-gray-700">Edit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {entrants.length > 0 ? (
+            entrants.map((entrant) => (
+              <tr
+                key={entrant.number}
+                className={`border border-gray-700 ${entrant.status === "Eliminated" ? "opacity-50 bg-gray-700" : ""}`}
               >
-                Assign Wrestler
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+                <td className="p-3">{entrant.number}</td>
+                <td className="p-3">{entrant.participant}</td>
+                <td className="p-3">
+                    {editingEntrant === entrant.number ? (
+                      <WrestlerSearch 
+                        onSelect={(name) => updateWrestlerName(entrant.number, name)} 
+                        onClose={() => setEditingEntrant(null)} // ✅ Close when a wrestler is selected
+                      />
+                    ) : (
+                      entrant.name
+                    )}
+                  </td>
 
-      {activeEntrant !== null && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 p-4">
-          <div className="bg-gray-800 p-6 rounded-lg w-96">
-            <h2 className="text-2xl font-bold text-yellow-400 mb-4">Select Wrestler</h2>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={handleSearch}
-              className="w-full p-2 bg-gray-700 text-white rounded mb-4"
-              placeholder="Search for a wrestler..."
-            />
-            <ul>
-              {searchResults.map((wrestler, index) => (
-                <li
-                  key={index}
-                  className="p-2 bg-gray-700 rounded cursor-pointer hover:bg-gray-600"
-                  onClick={() => selectWrestler(wrestler)}
-                >
-                  {wrestler.name}
-                </li>
-              ))}
-            </ul>
-            <button
-              onClick={() => setActiveEntrant(null)}
-              className="mt-4 px-4 py-2 bg-red-600 text-white rounded"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+                <td className="p-3">
+                  <button onClick={() => toggleStatus(entrant.number)} className="focus:outline-none">
+                    {entrant.status === "Active" ? (
+                      <ToggleRight className="text-green-500 w-6 h-6" />
+                    ) : (
+                      <ToggleLeft className="text-red-500 w-6 h-6" />
+                    )}
+                  </button>
+                </td>
+                <td className="p-3">
+                  <button onClick={() => setEditingEntrant(entrant.number)} className="text-blue-400 hover:underline">
+                    <Pencil className="w-5 h-5 text-blue-400 hover:text-blue-300" />
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={5} className="text-center text-gray-400 p-4">
+                Loading entrants...
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </main>
   );
 }

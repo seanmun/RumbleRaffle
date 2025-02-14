@@ -1,137 +1,164 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
-// Define the Participant type
-interface Participant {
-  name: string;
-  entrants: number;
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export default function RaffleRoom() {
-  const [leagueName, setLeagueName] = useState<string | null>(null);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [shuffledEntrants, setShuffledEntrants] = useState<string[]>([]);
-  const [slots, setSlots] = useState<string[]>(Array(30).fill(""));
-  const [raffleStarted, setRaffleStarted] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const leagueId = searchParams.get("leagueId");
 
+  const [raffleStarted, setRaffleStarted] = useState(false);
+  const [isRaffleComplete, setIsRaffleComplete] = useState(false);
+  const [raffleInterval, setRaffleInterval] = useState<NodeJS.Timeout | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [slots, setSlots] = useState<(string | null)[]>(Array(30).fill(null));
+  const [participants, setParticipants] = useState<{ name: string; entrants: number }[]>([]);
+  const [shuffledEntrants, setShuffledEntrants] = useState<string[]>([]);
+
+  // ✅ Fetch participants from the backend & localStorage
   useEffect(() => {
-    // Load league name and participants from localStorage
-    const storedLeague = localStorage.getItem("currentLeague");
-    const storedLeagueName = localStorage.getItem("currentLeagueName");
+    if (!leagueId) return;
 
-    if (storedLeagueName) {
-      setLeagueName(JSON.parse(storedLeagueName)); // Parse the stored name
+    fetch(`${API_URL}/league/${leagueId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.participants) {
+          setParticipants(data.participants);
+        }
+      })
+      .catch(() => {
+        // Load from localStorage if fetch fails
+        const storedParticipants = localStorage.getItem("currentParticipants");
+        if (storedParticipants) {
+          setParticipants(JSON.parse(storedParticipants));
+        }
+      });
+  }, [leagueId]);
+
+  // ✅ Generate a shuffled list of entrants when participants change
+  useEffect(() => {
+    if (participants.length > 0) {
+      const generatedEntrants = participants
+        .flatMap((p) => Array(p.entrants).fill(p.name))
+        .sort(() => Math.random() - 0.5);
+      setShuffledEntrants(generatedEntrants);
     }
-
-    if (storedLeague) {
-      try {
-        const parsedParticipants: Participant[] = JSON.parse(storedLeague) as Participant[];
-        setParticipants(parsedParticipants);
-        generateEntrants(parsedParticipants);
-      } catch (error) {
-        console.error("Error parsing stored participants:", error);
-        setParticipants([]); // Fallback to empty array
-      }
-    }
-  }, []);
-
-  const generateEntrants = (participants: Participant[]) => {
-    const entrantList: string[] = [];
-    participants.forEach((p) => {
-      for (let i = 1; i <= p.entrants; i++) {
-        entrantList.push(`${p.name} ${i}`);
-      }
-    });
-
-    // Sort the left-side list alphabetically for fairness
-    const sortedList = [...entrantList].sort();
-
-    // Shuffle the actual raffle order
-    const shuffledList = entrantList.sort(() => Math.random() - 0.5);
-
-    setParticipants(sortedList.map((name) => ({ name, entrants: 1 }))); // Display sorted names
-    setShuffledEntrants(shuffledList); // Store randomized order for raffle
-  };
+  }, [participants]);
 
   const startRaffle = () => {
     setRaffleStarted(true);
-    let index = -1; // Start at -1 so first update makes it 0
+    setIsRaffleComplete(false);
+    let index = -1;
 
     const interval = setInterval(() => {
-      index++; // Move to the next index before assigning
-
+      index++;
       if (index < 30) {
         setSlots((prevSlots) => {
           const newSlots = [...prevSlots];
-          newSlots[index] = shuffledEntrants[index]; // Assign to correct index
+          newSlots[index] = shuffledEntrants[index]; // Assign correct participant
           return newSlots;
         });
-
-        setCurrentIndex(index + 1); // Display proper slot number
+        setCurrentIndex(index + 1);
       } else {
         clearInterval(interval);
+        setIsRaffleComplete(true);
+        saveRaffleResults();
       }
-    }, 2000); // 2 seconds per assignment
+    }, 2000);
+
+    setRaffleInterval(interval);
+  };
+
+  const finishRaffleNow = () => {
+    if (raffleInterval) clearInterval(raffleInterval);
+
+    setSlots(shuffledEntrants);
+    setCurrentIndex(30);
+    setIsRaffleComplete(true);
+    saveRaffleResults();
+  };
+
+  // ✅ Save raffle results to backend
+  const saveRaffleResults = async () => {
+    if (!leagueId || shuffledEntrants.length !== 30) return;
+
+    const entrants = shuffledEntrants.map((participant, index) => ({
+      number: index + 1,
+      participant,
+    }));
+
+    await fetch(`${API_URL}/assign-raffle-results`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ leagueId, entrants }),
+    });
   };
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
-      {/* Display League Name */}
-      {leagueName && <h2 className="text-3xl font-bold text-yellow-400 mb-2">{leagueName}</h2>}
-  
       <h1 className="text-4xl font-bold text-yellow-400 mb-4">Raffle Room</h1>
-  
-      {/* Raffle Button at the Top */}
+
+      {/* Raffle Buttons */}
       {!raffleStarted ? (
-        <button
-          onClick={startRaffle}
-          className="mb-6 px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-500 transition"
-        >
-          Begin Raffle
-        </button>
+        <div className="mb-6 flex gap-4">
+          <button
+            onClick={startRaffle}
+            className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-500 transition"
+          >
+            Begin Raffle
+          </button>
+          <button
+            onClick={finishRaffleNow}
+            className="px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-500 transition"
+          >
+            Finish Now
+          </button>
+        </div>
       ) : (
         <p className="mb-6 text-gray-300">Assigning entrants... {currentIndex} / 30</p>
       )}
-  
-      <div className="flex flex-col md:flex-row w-full max-w-4xl gap-8">
-        {/* Right Side - Raffle Slots (Stacks on top in mobile) */}
-        <div className="w-full md:w-2/3 bg-gray-800 p-4 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold text-yellow-400 mb-4">Raffle Slots</h2>
-          <div className="grid grid-cols-5 gap-2">
-            {slots.slice(0, 30).map((slot, index) => ( // Ensure no extra slot #31
-              <div key={index} className="p-4 bg-gray-700 rounded-md text-center">
-                <span className="text-gray-400">#{index + 1}</span>
-                <p className="text-white">{slot}</p>
-              </div>
-            ))}
-          </div>
-  
-          {/* Show "Launch Live Tracker" button only after all 30 slots are filled */}
-          {raffleStarted && currentIndex === 30 && (
-            <button
-              onClick={() => router.push("/live-tracker")}
-              className="mt-6 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-500 transition w-full"
+
+      {/* Layout: Left (Raffle Slots) | Right (Participant List) */}
+      <div className="grid grid-cols-2 gap-8 mt-6">
+        {/* Left Side: Raffle Slots */}
+        <div className="grid grid-cols-5 gap-4">
+          {slots.map((entrant, index) => (
+            <div
+              key={index}
+              className={`p-4 bg-gray-800 rounded-lg shadow-md text-center ${
+                entrant ? "text-white" : "text-gray-400"
+              }`}
             >
-              Launch Live Tracker
-            </button>
-          )}
+              <p className="font-bold">#{index + 1}</p>
+              <p>{entrant || "Waiting..."}</p>
+            </div>
+          ))}
         </div>
-  
-        {/* Left Side - Participants (Moves below in mobile) */}
-        <div className="w-full md:w-1/3 bg-gray-800 p-4 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold text-yellow-400 mb-4">Participants</h2>
-          <ul>
-            {participants.map((p, index) => (
-              <li key={index} className="p-2 bg-gray-700 rounded-md mb-2 text-center">
-                {p.name}
+
+        {/* Right Side: List of Participants */}
+        <div className="bg-gray-800 p-4 rounded-lg shadow-md max-h-[600px] overflow-y-auto">
+          <h2 className="text-xl font-bold text-yellow-400 mb-2">Participants</h2>
+          <ul className="text-gray-300">
+            {shuffledEntrants.map((entrant, index) => (
+              <li key={index} className="p-2 border-b border-gray-700">
+                {index + 1}. {entrant}
               </li>
             ))}
           </ul>
         </div>
       </div>
+
+      {/* Button to Go to Live Tracker After Raffle Completes */}
+      {isRaffleComplete && (
+        <button
+          onClick={() => router.push(`/live-tracker?leagueId=${leagueId}`)}
+          className="mt-6 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-500 transition"
+        >
+          Go to Live Tracker
+        </button>
+      )}
     </main>
-  );  
+  );
 }

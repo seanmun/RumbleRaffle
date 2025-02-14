@@ -4,15 +4,14 @@ import { useEffect, useState } from "react";
 export default function Leagues() {
   const [leagues, setLeagues] = useState<{ leagueId: string; leagueName: string }[]>([]);
 
-  // ✅ Dynamically set the API URL (works for both local & Vercel)
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://rumble-raffle.vercel.app";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   useEffect(() => {
-    fetch(`${API_URL}/api/leagues`) // ✅ Fetch from the correct API URL
+    fetch(`${API_URL}/leagues`) // 🔥 Removed `/api/` to match backend
       .then((res) => res.json())
       .then((data) => setLeagues(data))
       .catch(() => setLeagues([]));
-  }, []);
+  }, [API_URL]); // ✅ React will re-run the effect if API_URL changes
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
