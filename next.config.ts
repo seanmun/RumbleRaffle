@@ -1,11 +1,17 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  distDir: "docs",   // Ensures build goes into /docs
-  images: {
-    unoptimized: true,  // Fixes image loading issues
+  output: "standalone",
+  distDir: ".next",  // 🔥 Ensures Next.js uses the default build folder
+  experimental: {
+    appDir: false,   // 🔥 Forces Pages Router mode (prevents build deletion)
   },
-  basePath: "",  // Keep empty since we're using a custom domain
-  trailingSlash: true,  // Ensures proper routing
+  generateBuildId: async () => {
+    return "my-build"; // 🔥 Ensures a fresh build every time
+  },
+  onDemandEntries: {
+    maxInactiveAge: 60 * 1000, // 🔥 Keeps routes active longer
+    pagesBufferLength: 5,
+  },
 };
 
 export default nextConfig;
