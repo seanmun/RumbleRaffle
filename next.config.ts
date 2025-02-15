@@ -1,11 +1,19 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  distDir: "docs",   // Ensures build goes into /docs
+import type { NextConfig } from "next";
+import type { Configuration } from "webpack";
+
+/** @type {NextConfig} */
+const nextConfig: NextConfig = {
   images: {
-    unoptimized: true,  // Fixes image loading issues
+    unoptimized: true,
   },
-  basePath: "",  // Remove this if using a custom domain (e.g., rumbleraffle.com)
-  trailingSlash: true,  // Forces Next.js to generate static HTML for all routes
+  trailingSlash: true,
+  webpack: (config: Configuration, { isServer }: { isServer: boolean }) => {
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push("express", "cors"); // ✅ Prevents backend dependencies from breaking frontend build
+    }
+    return config;
+  },
 };
 
-module.exports = nextConfig;
+export default nextConfig;
