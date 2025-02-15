@@ -1,17 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
-  distDir: ".next",  // 🔥 Ensures Next.js uses the default build folder
+  trailingSlash: true, // Ensures correct asset loading
+  images: {
+    unoptimized: true, // Ensures images load properly (avoids Next.js optimizations failing)
+  },
   experimental: {
-    appDir: false,   // 🔥 Forces Pages Router mode (prevents build deletion)
+    appDir: false, // Fixes potential build issues
   },
-  generateBuildId: async () => {
-    return "my-build"; // 🔥 Ensures a fresh build every time
-  },
-  onDemandEntries: {
-    maxInactiveAge: 60 * 1000, // 🔥 Keeps routes active longer
-    pagesBufferLength: 5,
-  },
+  assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || "", // Ensures assets are correctly referenced
 };
 
 export default nextConfig;
