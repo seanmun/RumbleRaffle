@@ -2,14 +2,30 @@
     "version": 2,
     "builds": [
       {
-        "src": "server.ts",
+        "src": "next.config.ts",
+        "use": "@vercel/next"
+      },
+      {
+        "src": "backend/server.ts",
         "use": "@vercel/node"
       }
     ],
     "routes": [
       {
+        "src": "/test",
+        "dest": "backend/server.ts"
+      },
+      {
+        "src": "/leagues",
+        "dest": "backend/server.ts"
+      },
+      {
+        "src": "/create-league",
+        "dest": "backend/server.ts"
+      },
+      {
         "src": "/(.*)",
-        "dest": "server.ts"
+        "dest": "next.config.ts"
       }
     ]
   }

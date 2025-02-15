@@ -1,21 +1,11 @@
-import type { NextConfig } from "next";
-import type { Configuration, WebpackOptionsNormalized } from "webpack";
-
-/** @type {NextConfig} */
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  distDir: "docs",   // Ensures build goes into /docs
   images: {
-    unoptimized: true,
+    unoptimized: true,  // Fixes image loading issues
   },
-  trailingSlash: true,
-  webpack: (config: Configuration & { externals?: WebpackOptionsNormalized["externals"] }, { isServer }) => {
-    if (isServer) {
-      if (!Array.isArray(config.externals)) {
-        config.externals = [];
-      }
-      (config.externals as unknown as string[]).push("express", "cors"); // ✅ Fully typed .push
-    }
-    return config;
-  },
+  basePath: "",  // Keep empty since we're using a custom domain
+  trailingSlash: true,  // Ensures proper routing
 };
 
 export default nextConfig;

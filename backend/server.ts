@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { wrestlers } from "./wrestlers"; // ✅ Correct path if `wrestlers.ts` is inside backend/
-
+import { wrestlers } from "../src/app/api/wrestlers";
 
 const raffleResults: { [leagueId: string]: Entrant[] } = {}; // 🔥 Temporary in-memory storage
 
@@ -42,7 +41,7 @@ app.get("/", (req, res) => {
   res.send("RumbleRaffle Backend is Running! 🎉");
 });
 
-// ✅ Create League Route (NO "/api/")
+// ✅ Create League Route
 app.post("/create-league", (req, res) => {
   const { leagueName, participants } = req.body;
 
@@ -57,18 +56,16 @@ app.post("/create-league", (req, res) => {
 
   const leagueId = Math.random().toString(36).substr(2, 9);
 
-  // Generate entrants list
   let entrantNumber = 1;
   const entrants: Entrant[] = participants.flatMap((participant: Participant) =>
     Array.from({ length: participant.entrants }, () => ({
       number: entrantNumber++,
       participant: participant.name,
-      name: "TBD", // Wrestler name defaults to TBD
+      name: "TBD",
       status: "Active",
     }))
   );
 
-  // Store league in memory
   leagues[leagueId] = { leagueId, leagueName, participants, entrants };
 
   console.log("New League Created:", leagues[leagueId]);
@@ -90,7 +87,7 @@ app.get("/league/:id", (req, res) => {
   res.json(league);
 });
 
-// ✅ Store Raffle Results Correctly (NO "/api/")
+// ✅ Store Raffle Results
 app.post("/assign-raffle-results", (req, res) => {
   const { leagueId, entrants } = req.body as { leagueId: string; entrants: { participant: string }[] };
 
@@ -102,16 +99,15 @@ app.post("/assign-raffle-results", (req, res) => {
     return res.status(404).json({ error: "League not found" });
   }
 
-  // ✅ Store entrants in both `leagues` and `raffleResults`
   const formattedEntrants: Entrant[] = entrants.map((entrant, index) => ({
     number: index + 1,
     participant: entrant.participant,
-    name: "TBD", // Placeholder until a wrestler is assigned
+    name: "TBD",
     status: "Active",
   }));
 
-  leagues[leagueId].entrants = formattedEntrants; // ✅ Store in league object
-  raffleResults[leagueId] = formattedEntrants; // ✅ Store in raffle results
+  leagues[leagueId].entrants = formattedEntrants;
+  raffleResults[leagueId] = formattedEntrants;
 
   console.log("✅ Raffle results stored:", JSON.stringify(raffleResults[leagueId], null, 2));
 
@@ -126,7 +122,6 @@ app.get("/live-tracker", (req, res) => {
     return res.status(400).json({ error: "Missing or invalid leagueId" });
   }
 
-  // ✅ Fetch entrants from `raffleResults`
   const entrants = raffleResults[leagueId];
 
   if (!entrants || entrants.length === 0) {
@@ -142,7 +137,7 @@ app.get("/wrestlers", (req, res) => {
   res.json(wrestlers);
 });
 
-// ✅ Toggle Entrant Status (Active/Eliminated)
+// ✅ Toggle Entrant Status
 app.patch("/live-tracker/toggle-status", (req, res) => {
   const { leagueId, entrantNumber } = req.body;
 
@@ -160,7 +155,6 @@ app.patch("/live-tracker/toggle-status", (req, res) => {
     return res.status(404).json({ error: "Entrant not found" });
   }
 
-  // Toggle status
   entrant.status = entrant.status === "Active" ? "Eliminated" : "Active";
 
   res.json({ message: "Entrant status updated", entrant });
