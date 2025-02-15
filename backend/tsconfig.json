@@ -4,7 +4,7 @@
     "module": "CommonJS",
     "moduleResolution": "Node",
     "outDir": "dist",
-    "rootDir": "./",
+    "rootDir": "..",  // 🔥 Allows importing from ../src
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
@@ -12,5 +12,6 @@
     "allowJs": true,
     "resolveJsonModule": true
   },
-  "include": ["**/*.ts"] // <-- This ensures all TypeScript files are compiled
+  "include": ["server.ts", "../src/app/api/wrestlers.ts"],  // 🔥 Ensure TypeScript includes the `wrestlers.ts` file
+  "exclude": ["node_modules", "dist"]
 }
