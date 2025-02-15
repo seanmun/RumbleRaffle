@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import type { Configuration } from "webpack";
+import type { Configuration, WebpackOptionsNormalized } from "webpack";
 
 /** @type {NextConfig} */
 const nextConfig: NextConfig = {
@@ -7,10 +7,12 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   trailingSlash: true,
-  webpack: (config: Configuration, { isServer }: { isServer: boolean }) => {
+  webpack: (config: Configuration & { externals?: WebpackOptionsNormalized["externals"] }, { isServer }) => {
     if (isServer) {
-      config.externals = config.externals || [];
-      config.externals.push("express", "cors"); // ✅ Prevents backend dependencies from breaking frontend build
+      if (!Array.isArray(config.externals)) {
+        config.externals = [];
+      }
+      (config.externals as unknown as string[]).push("express", "cors"); // ✅ Fully typed .push
     }
     return config;
   },
