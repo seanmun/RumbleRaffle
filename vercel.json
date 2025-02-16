@@ -12,13 +12,8 @@
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
+      "src": "/api/wrestlers",
       "dest": "/backend/server.ts"
     }
-  ],
-  "functions": {
-    "api/wrestlers": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  ]
 }
