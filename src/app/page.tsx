@@ -26,7 +26,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center p-6">
-      <h1 className="text-5xl font-bold text-yellow-400">Rumble Raffle</h1>
+      <h1 className="text-5xl font-bold text-yellow-400">Welcome to<br/>Rumble Raffle</h1>
       <p className="mt-4 text-xl text-gray-300">The ultimate Royal Rumble betting experience.</p>
 
       <div className="mt-6 p-4 bg-gray-800 rounded-lg shadow-md">
