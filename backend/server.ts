@@ -3,7 +3,12 @@ import cors from "cors";
 import { wrestlers } from "../src/app/api/wrestlers"; // Ensure this path is correct
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: ["https://www.rumbleRaffle.com", "https://rumbleraffle.com"],
+  methods: "GET,POST",
+  allowedHeaders: "Content-Type,Authorization"
+}));
+
 app.use(express.json());
 
 // Define Types
