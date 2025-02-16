@@ -7,10 +7,12 @@ export default function Home() {
   const router = useRouter(); // Initialize router
 
   // ✅ Dynamically set the API URL (works for both local & Vercel)
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "development" ? "http://localhost:4000" : "");
 
   useEffect(() => {
-    fetch(`${API_URL}/test`) // ✅ Removed `/api/`
+    fetch(`${API_URL}/api/test`) // ✅ Removed `/api/`
       .then((res) => res.json())
       .then((data) => {
         if (data.message) {

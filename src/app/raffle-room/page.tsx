@@ -2,7 +2,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "development" ? "http://localhost:4000" : "");
 
 // 🔹 Suspense wrapper for useSearchParams()
 export default function RaffleRoom() {
@@ -29,7 +31,7 @@ function RaffleRoomContent() {
   useEffect(() => {
     if (!leagueId) return;
 
-    fetch(`${API_URL}/league/${leagueId}`)
+    fetch(`${API_URL}/api/league/${leagueId}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.participants) {
@@ -94,7 +96,7 @@ function RaffleRoomContent() {
       participant,
     }));
 
-    await fetch(`${API_URL}/assign-raffle-results`, {
+    await fetch(`${API_URL}/api/assign-raffle-results`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ leagueId, entrants }),

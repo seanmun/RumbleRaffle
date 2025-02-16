@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 export default function Leagues() {
   const [leagues, setLeagues] = useState<{ leagueId: string; leagueName: string }[]>([]);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "development" ? "http://localhost:4000" : "");
 
   useEffect(() => {
-    fetch(`${API_URL}/leagues`) // 🔥 Removed `/api/` to match backend
+    fetch(`${API_URL}/api/leagues`) // 🔥 Removed `/api/` to match backend
       .then((res) => res.json())
       .then((data) => setLeagues(data))
       .catch(() => setLeagues([]));

@@ -14,10 +14,11 @@
     {
       "src": "/api/(.*)",
       "dest": "/backend/server.ts"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/"
     }
-  ]
+  ],
+  "functions": {
+    "api/wrestlers": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }

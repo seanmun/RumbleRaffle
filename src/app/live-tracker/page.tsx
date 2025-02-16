@@ -26,11 +26,13 @@ function LiveTrackerContent() {
 
   const [entrants, setEntrants] = useState<Entrant[]>([]);
   const [editingEntrant, setEditingEntrant] = useState<number | null>(null);
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "development" ? "http://localhost:4000" : "");
 
   useEffect(() => {
     if (leagueId) {
-      fetch(`${API_URL}/live-tracker?leagueId=${leagueId}`)
+      fetch(`${API_URL}/api/live-tracker?leagueId=${leagueId}`)
         .then((res) => res.json())
         .then((data) => {
           if (Array.isArray(data)) {
@@ -57,7 +59,7 @@ function LiveTrackerContent() {
     setEntrants(updatedEntrants);
 
     try {
-      await fetch(`${API_URL}/live-tracker/toggle-status`, {
+      await fetch(`${API_URL}/api/live-tracker/toggle-status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leagueId, entrantNumber }),
@@ -76,7 +78,7 @@ function LiveTrackerContent() {
     setEditingEntrant(null);
 
     try {
-      await fetch(`${API_URL}/live-tracker/update-wrestler`, {
+      await fetch(`${API_URL}/api/live-tracker/update-wrestler`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leagueId, entrantNumber, newName }),

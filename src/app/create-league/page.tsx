@@ -11,7 +11,9 @@ export default function CreateLeague() {
   const [remainingEntrants, setRemainingEntrants] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const API_URL =
+  process.env.NEXT_PUBLIC_API_URL ??
+  (process.env.NODE_ENV === "development" ? "http://localhost:4000" : "");
 
   useEffect(() => {
     if (step === 2) {
@@ -63,7 +65,7 @@ export default function CreateLeague() {
     try {
       console.log("📡 Sending Create League Request to:", `${API_URL}/create-league`);
       
-      const response = await fetch(`${API_URL}/create-league`, { // 🔥 Ensure correct API path
+      const response = await fetch(`${API_URL}/api/create-league`, { // 🔥 Ensure correct API path
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leagueName, participants }),
