@@ -1,13 +1,20 @@
 import express from "express";
-import cors from "cors";
 import { wrestlers } from "../src/app/api/wrestlers"; // Ensure this path is correct
 
 const app = express();
-app.use(cors({
-  origin: ["https://www.rumbleRaffle.com", "https://rumbleraffle.com"], // Allow only your domains
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "https://www.rumbleRaffle.com");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  // Handle Preflight Requests
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
 
 app.use(express.json());
 
