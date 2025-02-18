@@ -4,9 +4,9 @@ import { wrestlers } from "../src/app/api/wrestlers"; // Ensure this path is cor
 
 const app = express();
 app.use(cors({
-  origin: ["https://www.rumbleRaffle.com", "https://rumbleraffle.com"],
-  methods: "GET,POST",
-  allowedHeaders: "Content-Type,Authorization"
+  origin: ["https://www.rumbleRaffle.com", "https://rumbleraffle.com"], // Allow only your domains
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
