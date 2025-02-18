@@ -63,7 +63,7 @@ export default function CreateLeague() {
     }
 
     try {
-      console.log("📡 Sending Create League Request to:", `${API_URL}/create-league`);
+      console.log("📡 Sending Create League Request to:", `${API_URL}/create-league/`);
       
       const response = await fetch(`${API_URL}/api/create-league`, { // 🔥 Ensure correct API path
         method: "POST",

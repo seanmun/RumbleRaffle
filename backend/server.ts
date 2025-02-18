@@ -2,12 +2,22 @@ import express from "express";
 import { wrestlers } from "../src/app/api/wrestlers"; // Ensure this path is correct
 
 const app = express();
+
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "https://www.rumbleRaffle.com");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  const allowedOrigins = [
+    "https://www.rumbleRaffle.com", // ✅ Production
+    "http://localhost:3000", // ✅ Local development
+  ];
+
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  // Handle Preflight Requests
+  // ✅ Handle Preflight Requests
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
@@ -43,17 +53,17 @@ const leagues: { [key: string]: League } = {};
 const raffleResults: { [leagueId: string]: Entrant[] } = {};
 
 // ✅ Health Check Route (for debugging)
-app.get("/api/test", (req, res) => {
+app.get(["/api/test", "/api/test/"], (req, res) => {  // ✅ Support both versions
   res.json({ message: "API is working on Vercel!" });
 });
 
 // ✅ Get All Wrestlers
-app.get("/api/wrestlers", (req, res) => {
+app.get(["/api/wrestlers", "/api/wrestlers/"], (req, res) => {
   res.json(wrestlers);
 });
 
 // ✅ Create League
-app.post("/api/create-league", (req, res) => {
+app.post(["/api/create-league", "/api/create-league/"], (req, res) => {
   const { leagueName, participants } = req.body;
 
   if (!leagueName || !participants || participants.length < 2) {
@@ -83,12 +93,12 @@ app.post("/api/create-league", (req, res) => {
 });
 
 // ✅ Get All Leagues
-app.get("/api/leagues", (req, res) => {
+app.get(["/api/leagues", "/api/leagues/"], (req, res) => {
   res.json(Object.values(leagues));
 });
 
 // ✅ Get a Specific League
-app.get("/api/league/:id", (req, res) => {
+app.get(["/api/league/:id", "/api/league/:id/"], (req, res) => {
   const league = leagues[req.params.id];
   if (!league) {
     return res.status(404).json({ error: "League not found" });
@@ -97,7 +107,7 @@ app.get("/api/league/:id", (req, res) => {
 });
 
 // ✅ Store Raffle Results
-app.post("/api/assign-raffle-results", (req, res) => {
+app.post(["/api/assign-raffle-results", "/api/assign-raffle-results/"], (req, res) => {
   const { leagueId, entrants } = req.body as { leagueId: string; entrants: { participant: string }[] };
 
   if (!leagueId || !entrants || entrants.length !== 30) {
@@ -122,7 +132,7 @@ app.post("/api/assign-raffle-results", (req, res) => {
 });
 
 // ✅ Fetch Entrants for a Specific League (Live Tracker)
-app.get("/api/live-tracker", (req, res) => {
+app.get(["/api/live-tracker", "/api/live-tracker/"], (req, res) => {
   const { leagueId } = req.query;
 
   if (!leagueId || typeof leagueId !== "string") {
@@ -139,7 +149,7 @@ app.get("/api/live-tracker", (req, res) => {
 });
 
 // ✅ Toggle Entrant Status
-app.patch("/api/live-tracker/toggle-status", (req, res) => {
+app.patch(["/api/live-tracker/toggle-status", "/api/live-tracker/toggle-status/"], (req, res) => {
   const { leagueId, entrantNumber } = req.body;
 
   if (!leagueId || !entrantNumber) {
@@ -162,7 +172,7 @@ app.patch("/api/live-tracker/toggle-status", (req, res) => {
 });
 
 // ✅ Update Wrestler Name for an Entrant
-app.patch("/api/live-tracker/update-wrestler", (req, res) => {
+app.patch(["/api/live-tracker/update-wrestler", "/api/live-tracker/update-wrestler/"], (req, res) => {
   const { leagueId, entrantNumber, newName } = req.body;
 
   if (!leagueId || !entrantNumber || !newName) {

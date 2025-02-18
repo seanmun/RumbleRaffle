@@ -6,13 +6,24 @@ export default function Home() {
   const [message, setMessage] = useState("Loading...");
   const router = useRouter(); // Initialize router
 
-  // ✅ Dynamically set the API URL (works for both local & Vercel)
+  // ✅ Dynamically set the API URL (ensures it's never undefined)
   const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
-  (process.env.NODE_ENV === "development" ? "http://localhost:4000" : "");
+    process.env.NEXT_PUBLIC_API_URL && process.env.NEXT_PUBLIC_API_URL !== ""
+      ? process.env.NEXT_PUBLIC_API_URL
+      : process.env.NODE_ENV === "development"
+      ? "http://localhost:4000"
+      : "";
+
+  console.log("API URL:", API_URL); // ✅ Debug log
 
   useEffect(() => {
-    fetch(`${API_URL}/api/test`) // ✅ Removed `/api/`
+    if (!API_URL) {
+      console.error("🚨 API_URL is empty! Check .env.local settings.");
+      setMessage("⚠️ Failed to connect: API_URL is missing.");
+      return;
+    }
+
+    fetch(`${API_URL}/api/test`)
       .then((res) => res.json())
       .then((data) => {
         if (data.message) {
@@ -22,15 +33,25 @@ export default function Home() {
         }
       })
       .catch(() => setMessage("⚠️ Failed to connect to the backend"));
-  }, [API_URL]); // ✅ Now React will re-run the effect if API_URL changes
+  }, [API_URL]);
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center p-6">
-      <h1 className="text-5xl font-bold text-yellow-400">Welcome to<br/>Rumble Raffle</h1>
-      <p className="mt-4 text-xl text-gray-300">The ultimate Royal Rumble betting experience.</p>
+      <h1 className="text-5xl font-bold text-yellow-400">
+        Welcome to
+        <br />
+        Rumble Raffle
+      </h1>
+      <p className="mt-4 text-xl text-gray-300">
+        The ultimate Royal Rumble betting experience.
+      </p>
 
       <div className="mt-6 p-4 bg-gray-800 rounded-lg shadow-md">
-        <p className={`text-lg ${message.includes("✅") ? "text-green-400" : "text-red-400"}`}>
+        <p
+          className={`text-lg ${
+            message.includes("✅") ? "text-green-400" : "text-red-400"
+          }`}
+        >
           {message}
         </p>
       </div>
