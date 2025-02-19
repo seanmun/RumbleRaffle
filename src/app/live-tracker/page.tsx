@@ -96,16 +96,25 @@ function LiveTrackerContent() {
       <h1 className="text-4xl font-bold text-yellow-400">Live Tracker</h1>
       <p className="mt-2 text-gray-300">Tracking the action for your league!</p>
 
-      <table className="mt-6 w-full max-w-2xl border-collapse border border-gray-700 text-left">
-        <thead>
-          <tr className="bg-gray-800 text-yellow-400">
-            <th className="p-3 border border-gray-700">#</th>
-            <th className="p-3 border border-gray-700">Participant</th>
-            <th className="p-3 border border-gray-700">Wrestler Name</th>
-            <th className="p-3 border border-gray-700">Status</th>
-            <th className="p-3 border border-gray-700">Edit</th>
-          </tr>
-        </thead>
+      <table className="mt-6 w-full max-w-6xl table-auto border-collapse border border-gray-700 text-left">
+  <thead>
+    <tr className="bg-gray-800 text-yellow-400">
+      {/* Narrow # column */}
+      <th className="p-3 border border-gray-700 w-12 text-center">#</th>
+
+      {/* Participant -> no explicit width, so it grows */}
+      <th className="p-3 border border-gray-700">Participant</th>
+
+      {/* Wrestler Name -> also grows, but we’ll handle overflow in the cell */}
+      <th className="p-3 border border-gray-700">Wrestler Name</th>
+
+      {/* Narrow Status column */}
+      <th className="p-3 border border-gray-700 w-16 text-center">Status</th>
+
+      {/* Narrow Edit column */}
+      <th className="p-3 border border-gray-700 w-14 text-center">Edit</th>
+    </tr>
+  </thead>
         <tbody>
           {entrants.length > 0 ? (
             entrants.map((entrant) => (
@@ -113,7 +122,7 @@ function LiveTrackerContent() {
                 key={entrant.number}
                 className={`border border-gray-700 ${entrant.status === "Eliminated" ? "opacity-50 bg-gray-700" : ""}`}
               >
-                <td className="p-3">{entrant.number}</td>
+                <td className="p-3 relative overflow-visible">{entrant.number}</td>
                 <td className="p-3">{entrant.participant}</td>
                 <td className="p-3">
                   {editingEntrant === entrant.number ? (

@@ -46,7 +46,7 @@ export default function WrestlerSearch({ onSelect, onClose }: WrestlerSearchProp
 
       {/* If user has typed something, show dropdown */}
       {query && (
-        <ul className="absolute w-full bg-gray-800 border border-gray-600 rounded mt-1 max-h-48 overflow-auto z-10">
+        <ul className="absolute left-0 top-full bg-gray-800 border border-gray-600 rounded mt-1 max-h-48 overflow-auto z-10">
           {/* Filtered results */}
           {filteredWrestlers.map((wrestler, index) => (
             <li

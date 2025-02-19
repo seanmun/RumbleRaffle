@@ -37,11 +37,21 @@ export default function Home() {
 
   return (
     <main className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white text-center p-6">
-      <h1 className="text-5xl font-bold text-yellow-400">
-        Welcome to
-        <br />
-        Rumble Raffle
-      </h1>
+      <h1
+  className="text-6xl font-extrabold uppercase tracking-widest text-center"
+  style={{
+    color: "#FFC700", // Bright fill color (gold/yellow)
+    textShadow: `
+      -4px -4px 0 #000,
+      4px -4px 0 #000,
+      -4px 4px 0 #000,
+      4px 4px 0 #000
+    `,
+  }}
+>
+  Raffle Room
+</h1>
+
       <p className="mt-4 text-xl text-gray-300">
         The ultimate Royal Rumble betting experience.
       </p>
