@@ -49,7 +49,7 @@ export default function Home() {
     `,
   }}
 >
-  Raffle Room
+  Rumble Raffle
 </h1>
 
       <p className="mt-4 text-xl text-gray-300">
