@@ -1,14 +1,19 @@
 import express from "express";
-import { wrestlers } from "../src/app/api/wrestlers"; // Ensure this path is correct
+import { wrestlers } from "../src/app/api/wrestlers";
 
 const app = express();
 
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    "https://www.rumbleRaffle.com", // ✅ Production
-    "http://localhost:3000", // ✅ Local development
-  ];
+// If you only serve from the 'www' domain + localhost:3000, keep those.
+// If you need the apex domain (e.g., rumbleraffle.com without the 'www') or
+// the Vercel subdomain (rumble-raffle.vercel.app) for testing, uncomment/add them.
+const allowedOrigins = [
+  "https://www.rumbleRaffle.com", // Production (primary domain)
+  "http://localhost:3000",        // Local development
+  // "https://rumbleraffle.com",    // Uncomment if you serve directly from apex domain
+  // "https://rumble-raffle.vercel.app", // Uncomment if you test from Vercel subdomain
+];
 
+app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
@@ -17,7 +22,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-  // ✅ Handle Preflight Requests
+  // Handle Preflight Requests
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
@@ -25,10 +30,11 @@ app.use((req, res, next) => {
   next();
 });
 
-
 app.use(express.json());
 
-// Define Types
+// -------------------
+// Type Definitions
+// -------------------
 interface Participant {
   name: string;
   entrants: number;
@@ -37,7 +43,7 @@ interface Participant {
 interface Entrant {
   number: number;
   participant: string;
-  name: string; // Wrestler name (default "TBD" until assigned)
+  name: string; // Wrestler name (default "TBD")
   status: "Active" | "Eliminated";
 }
 
@@ -48,21 +54,29 @@ interface League {
   entrants: Entrant[];
 }
 
-// Temporary storage
+// -------------------
+// In-Memory Storage
+// -------------------
 const leagues: { [key: string]: League } = {};
 const raffleResults: { [leagueId: string]: Entrant[] } = {};
 
-// ✅ Health Check Route (for debugging)
-app.get(["/api/test", "/api/test/"], (req, res) => {  // ✅ Support both versions
+// -------------------
+// Health Check Route
+// -------------------
+app.get(["/api/test", "/api/test/"], (req, res) => {
   res.json({ message: "API is working on Vercel!" });
 });
 
-// ✅ Get All Wrestlers
+// -------------------
+// GET All Wrestlers
+// -------------------
 app.get(["/api/wrestlers", "/api/wrestlers/"], (req, res) => {
   res.json(wrestlers);
 });
 
-// ✅ Create League
+// -------------------
+// CREATE League
+// -------------------
 app.post(["/api/create-league", "/api/create-league/"], (req, res) => {
   const { leagueName, participants } = req.body;
 
@@ -70,7 +84,10 @@ app.post(["/api/create-league", "/api/create-league/"], (req, res) => {
     return res.status(400).json({ error: "Invalid league data" });
   }
 
-  const totalEntrants = participants.reduce((sum: number, p: Participant) => sum + p.entrants, 0);
+  const totalEntrants = participants.reduce(
+    (sum: number, p: Participant) => sum + p.entrants,
+    0
+  );
   if (totalEntrants !== 30) {
     return res.status(400).json({ error: "Total entrants must be exactly 30" });
   }
@@ -92,12 +109,16 @@ app.post(["/api/create-league", "/api/create-league/"], (req, res) => {
   res.json({ message: "League Created!", leagueId });
 });
 
-// ✅ Get All Leagues
+// -------------------
+// GET All Leagues
+// -------------------
 app.get(["/api/leagues", "/api/leagues/"], (req, res) => {
   res.json(Object.values(leagues));
 });
 
-// ✅ Get a Specific League
+// -------------------
+// GET Specific League
+// -------------------
 app.get(["/api/league/:id", "/api/league/:id/"], (req, res) => {
   const league = leagues[req.params.id];
   if (!league) {
@@ -106,9 +127,14 @@ app.get(["/api/league/:id", "/api/league/:id/"], (req, res) => {
   res.json(league);
 });
 
-// ✅ Store Raffle Results
+// --------------------------
+// STORE Raffle Results
+// --------------------------
 app.post(["/api/assign-raffle-results", "/api/assign-raffle-results/"], (req, res) => {
-  const { leagueId, entrants } = req.body as { leagueId: string; entrants: { participant: string }[] };
+  const { leagueId, entrants } = req.body as {
+    leagueId: string;
+    entrants: { participant: string }[];
+  };
 
   if (!leagueId || !entrants || entrants.length !== 30) {
     return res.status(400).json({ error: "Invalid raffle results" });
@@ -131,7 +157,9 @@ app.post(["/api/assign-raffle-results", "/api/assign-raffle-results/"], (req, re
   res.json({ message: "Raffle results saved!" });
 });
 
-// ✅ Fetch Entrants for a Specific League (Live Tracker)
+// ---------------------------
+// GET Entrants (Live Tracker)
+// ---------------------------
 app.get(["/api/live-tracker", "/api/live-tracker/"], (req, res) => {
   const { leagueId } = req.query;
 
@@ -148,7 +176,9 @@ app.get(["/api/live-tracker", "/api/live-tracker/"], (req, res) => {
   res.json(entrants);
 });
 
-// ✅ Toggle Entrant Status
+// ---------------------------
+// TOGGLE Entrant Status
+// ---------------------------
 app.patch(["/api/live-tracker/toggle-status", "/api/live-tracker/toggle-status/"], (req, res) => {
   const { leagueId, entrantNumber } = req.body;
 
@@ -171,12 +201,16 @@ app.patch(["/api/live-tracker/toggle-status", "/api/live-tracker/toggle-status/"
   res.json({ message: "Entrant status updated", entrant });
 });
 
-// ✅ Update Wrestler Name for an Entrant
+// ---------------------------
+// UPDATE Wrestler Name
+// ---------------------------
 app.patch(["/api/live-tracker/update-wrestler", "/api/live-tracker/update-wrestler/"], (req, res) => {
   const { leagueId, entrantNumber, newName } = req.body;
 
   if (!leagueId || !entrantNumber || !newName) {
-    return res.status(400).json({ error: "League ID, Entrant Number, and new name are required" });
+    return res
+      .status(400)
+      .json({ error: "League ID, Entrant Number, and new name are required" });
   }
 
   const entrants = raffleResults[leagueId];
@@ -194,7 +228,9 @@ app.patch(["/api/live-tracker/update-wrestler", "/api/live-tracker/update-wrestl
   res.json({ message: "Wrestler name updated", entrant });
 });
 
-// ✅ Start Express Server (Locally)
+// ---------------------------------
+// Start Express Server (Local Only)
+// ---------------------------------
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 4000;
   app.listen(PORT, () => {
@@ -202,5 +238,7 @@ if (!process.env.VERCEL) {
   });
 }
 
-// ✅ Export app for Vercel
+// ------------------------------
+// Export app for Vercel
+// ------------------------------
 export default app;
