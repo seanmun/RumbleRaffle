@@ -1,244 +1,271 @@
 import express from "express";
-import { wrestlers } from "../src/app/api/wrestlers";
+import cors from "cors";
+import { PrismaClient } from '@prisma/client';
 
 const app = express();
+const prisma = new PrismaClient();
 
-// If you only serve from the 'www' domain + localhost:3000, keep those.
-// If you need the apex domain (e.g., rumbleraffle.com without the 'www') or
-// the Vercel subdomain (rumble-raffle.vercel.app) for testing, uncomment/add them.
-const allowedOrigins = [
-  "https://www.rumbleRaffle.com", // Production (primary domain)
-  "http://localhost:3000",        // Local development
-  // "https://rumbleraffle.com",    // Uncomment if you serve directly from apex domain
-  // "https://rumble-raffle.vercel.app", // Uncomment if you test from Vercel subdomain
-];
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-  // Handle Preflight Requests
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
-  next();
-});
-
-app.use(express.json());
-
-// -------------------
-// Type Definitions
-// -------------------
-interface Participant {
+// Types
+interface ParticipantData {
   name: string;
   entrants: number;
 }
 
-interface Entrant {
-  number: number;
-  participant: string;
-  name: string; // Wrestler name (default "TBD")
-  status: "Active" | "Eliminated";
-}
-
-interface League {
-  leagueId: string;
+interface CreateLeagueRequest {
   leagueName: string;
-  participants: Participant[];
-  entrants: Entrant[];
+  participants: ParticipantData[];
 }
 
-// -------------------
-// In-Memory Storage
-// -------------------
-const leagues: { [key: string]: League } = {};
-const raffleResults: { [leagueId: string]: Entrant[] } = {};
+// CORS setup
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://www.rumbleraffle.com",
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "",
+  ].filter(Boolean)
+}));
 
-// -------------------
-// Health Check Route
-// -------------------
-app.get(["/api/test", "/api/test/"], (req, res) => {
-  res.json({ message: "API is working on Vercel!" });
+app.use(express.json());
+
+// Health check
+app.get("/", (req, res) => {
+  res.json({ message: "Rumble Raffle API is running!" });
 });
 
-// -------------------
-// GET All Wrestlers
-// -------------------
-app.get(["/api/wrestlers", "/api/wrestlers/"], (req, res) => {
-  res.json(wrestlers);
+// Create League
+app.post("/api/create-league", async (req, res) => {
+  try {
+    const { leagueName, participants }: CreateLeagueRequest = req.body;
+
+    if (!leagueName || !participants || participants.length < 2) {
+      return res.status(400).json({ error: "Invalid league data" });
+    }
+
+    const totalEntrants = participants.reduce((sum: number, p: ParticipantData) => sum + p.entrants, 0);
+    if (totalEntrants !== 30) {
+      return res.status(400).json({ error: "Total entrants must be exactly 30" });
+    }
+
+    // Create league
+    const league = await prisma.league.create({
+      data: {
+        name: leagueName,
+        creatorName: "Anonymous", // We'll make this dynamic later
+        status: 'setup'
+      }
+    });
+
+    // Create participants and entrants
+    let entrantNumber = 1;
+    
+    for (const participantData of participants) {
+      const participant = await prisma.participant.create({
+        data: {
+          name: participantData.name,
+          entryCount: participantData.entrants,
+          leagueId: league.id
+        }
+      });
+
+      // Create entrants for this participant
+      for (let i = 0; i < participantData.entrants; i++) {
+        await prisma.entrant.create({
+          data: {
+            number: entrantNumber++,
+            wrestlerName: 'TBD',
+            status: 'Active',
+            leagueId: league.id,
+            participantId: participant.id
+          }
+        });
+      }
+    }
+
+    res.json({ 
+      message: "League Created!", 
+      leagueId: league.id 
+    });
+
+  } catch (error) {
+    console.error('Error creating league:', error);
+    res.status(500).json({ error: "Failed to create league" });
+  }
 });
 
-// -------------------
-// CREATE League
-// -------------------
-app.post(["/api/create-league", "/api/create-league/"], (req, res) => {
-  const { leagueName, participants } = req.body;
+// Get League by ID
+app.get("/api/leagues/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
 
-  if (!leagueName || !participants || participants.length < 2) {
-    return res.status(400).json({ error: "Invalid league data" });
+    const league = await prisma.league.findUnique({
+      where: { id },
+      include: {
+        participants: {
+          include: {
+            entrants: {
+              orderBy: { number: 'asc' }
+            }
+          }
+        },
+        events: {
+          orderBy: { timestamp: 'desc' }
+        }
+      }
+    });
+
+    if (!league) {
+      return res.status(404).json({ error: 'League not found' });
+    }
+
+    res.json(league);
+
+  } catch (error) {
+    console.error('Error fetching league:', error);
+    res.status(500).json({ error: "Failed to fetch league" });
   }
-
-  const totalEntrants = participants.reduce(
-    (sum: number, p: Participant) => sum + p.entrants,
-    0
-  );
-  if (totalEntrants !== 30) {
-    return res.status(400).json({ error: "Total entrants must be exactly 30" });
-  }
-
-  const leagueId = Math.random().toString(36).substr(2, 9);
-
-  let entrantNumber = 1;
-  const entrants: Entrant[] = participants.flatMap((participant: Participant) =>
-    Array.from({ length: participant.entrants }, () => ({
-      number: entrantNumber++,
-      participant: participant.name,
-      name: "TBD",
-      status: "Active",
-    }))
-  );
-
-  leagues[leagueId] = { leagueId, leagueName, participants, entrants };
-
-  res.json({ message: "League Created!", leagueId });
 });
 
-// -------------------
-// GET All Leagues
-// -------------------
-app.get(["/api/leagues", "/api/leagues/"], (req, res) => {
-  res.json(Object.values(leagues));
+// Randomize League Entrants
+app.post("/api/leagues/:id/randomize", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get all participants for this league
+    const participants = await prisma.participant.findMany({
+      where: { leagueId: id },
+      include: { entrants: true }
+    });
+
+    if (participants.length === 0) {
+      return res.status(404).json({ error: 'League not found' });
+    }
+
+    // Create array of participant IDs based on their entry count
+    const participantPool: string[] = [];
+    participants.forEach(participant => {
+      for (let i = 0; i < participant.entryCount; i++) {
+        participantPool.push(participant.id);
+      }
+    });
+
+    // Shuffle the participant pool
+    for (let i = participantPool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [participantPool[i], participantPool[j]] = [participantPool[j], participantPool[i]];
+    }
+
+    // Update entrants with randomized assignments
+    for (let entrantNumber = 1; entrantNumber <= 30; entrantNumber++) {
+      const randomParticipantId = participantPool[entrantNumber - 1];
+      
+      await prisma.entrant.updateMany({
+        where: {
+          leagueId: id,
+          number: entrantNumber
+        },
+        data: {
+          participantId: randomParticipantId
+        }
+      });
+    }
+
+    // Create event log
+    await prisma.event.create({
+      data: {
+        type: 'entrants_randomized',
+        title: 'Entrants randomized',
+        description: 'League entrants have been randomly assigned',
+        leagueId: id
+      }
+    });
+
+    res.json({ message: 'Entrants randomized successfully!' });
+
+  } catch (error) {
+    console.error('Error randomizing entrants:', error);
+    res.status(500).json({ error: "Failed to randomize entrants" });
+  }
 });
 
-// -------------------
-// GET Specific League
-// -------------------
-app.get(["/api/league/:id", "/api/league/:id/"], (req, res) => {
-  const league = leagues[req.params.id];
-  if (!league) {
-    return res.status(404).json({ error: "League not found" });
+// Update Entrant (Wrestler assignment and elimination)
+app.patch("/api/leagues/:leagueId/entrants/:number", async (req, res) => {
+  try {
+    const { leagueId, number } = req.params;
+    const { wrestlerName, status, eliminatedBy } = req.body;
+
+    const entrant = await prisma.entrant.findUnique({
+      where: { 
+        leagueId_number: { 
+          leagueId, 
+          number: parseInt(number) 
+        } 
+      },
+      include: { participant: true }
+    });
+
+    if (!entrant) {
+      return res.status(404).json({ error: 'Entrant not found' });
+    }
+
+    // Prepare update data
+    const updateData: {
+      wrestlerName?: string;
+      status?: string;
+      eliminatedAt?: Date;
+      eliminatedBy?: string;
+    } = {};
+
+    if (wrestlerName) updateData.wrestlerName = wrestlerName;
+    if (status) {
+      updateData.status = status;
+      if (status === 'Eliminated') {
+        updateData.eliminatedAt = new Date();
+        if (eliminatedBy) updateData.eliminatedBy = eliminatedBy;
+      }
+    }
+
+    // Update entrant
+    const updatedEntrant = await prisma.entrant.update({
+      where: { id: entrant.id },
+      data: updateData
+    });
+
+    // Log the appropriate event
+    if (wrestlerName && wrestlerName !== entrant.wrestlerName) {
+      await prisma.event.create({
+        data: {
+          type: 'wrestler_assigned',
+          title: `${wrestlerName} assigned to #${number}`,
+          description: `${entrant.participant.name}'s entry #${number}`,
+          leagueId,
+          data: { entrantId: entrant.id, wrestlerName }
+        }
+      });
+    }
+
+    if (status === 'Eliminated' && entrant.status !== 'Eliminated') {
+      await prisma.event.create({
+        data: {
+          type: 'entrant_eliminated',
+          title: `${entrant.wrestlerName || 'Entry #' + number} eliminated`,
+          description: eliminatedBy ? `Eliminated by ${eliminatedBy}` : '',
+          leagueId,
+          data: { entrantId: entrant.id, eliminatedBy }
+        }
+      });
+    }
+
+    res.json({ success: true, entrant: updatedEntrant });
+
+  } catch (error) {
+    console.error('Error updating entrant:', error);
+    res.status(500).json({ error: "Failed to update entrant" });
   }
-  res.json(league);
 });
 
-// --------------------------
-// STORE Raffle Results
-// --------------------------
-app.post(["/api/assign-raffle-results", "/api/assign-raffle-results/"], (req, res) => {
-  const { leagueId, entrants } = req.body as {
-    leagueId: string;
-    entrants: { participant: string }[];
-  };
-
-  if (!leagueId || !entrants || entrants.length !== 30) {
-    return res.status(400).json({ error: "Invalid raffle results" });
-  }
-
-  if (!leagues[leagueId]) {
-    return res.status(404).json({ error: "League not found" });
-  }
-
-  const formattedEntrants: Entrant[] = entrants.map((entrant, index) => ({
-    number: index + 1,
-    participant: entrant.participant,
-    name: "TBD",
-    status: "Active",
-  }));
-
-  leagues[leagueId].entrants = formattedEntrants;
-  raffleResults[leagueId] = formattedEntrants;
-
-  res.json({ message: "Raffle results saved!" });
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
-// ---------------------------
-// GET Entrants (Live Tracker)
-// ---------------------------
-app.get(["/api/live-tracker", "/api/live-tracker/"], (req, res) => {
-  const { leagueId } = req.query;
-
-  if (!leagueId || typeof leagueId !== "string") {
-    return res.status(400).json({ error: "Missing or invalid leagueId" });
-  }
-
-  const entrants = raffleResults[leagueId];
-
-  if (!entrants || entrants.length === 0) {
-    return res.status(404).json({ error: "No entrants found for this league" });
-  }
-
-  res.json(entrants);
-});
-
-// ---------------------------
-// TOGGLE Entrant Status
-// ---------------------------
-app.patch(["/api/live-tracker/toggle-status", "/api/live-tracker/toggle-status/"], (req, res) => {
-  const { leagueId, entrantNumber } = req.body;
-
-  if (!leagueId || !entrantNumber) {
-    return res.status(400).json({ error: "League ID and Entrant Number are required" });
-  }
-
-  const entrants = raffleResults[leagueId];
-  if (!entrants) {
-    return res.status(404).json({ error: "League not found" });
-  }
-
-  const entrant = entrants.find((e) => e.number === entrantNumber);
-  if (!entrant) {
-    return res.status(404).json({ error: "Entrant not found" });
-  }
-
-  entrant.status = entrant.status === "Active" ? "Eliminated" : "Active";
-
-  res.json({ message: "Entrant status updated", entrant });
-});
-
-// ---------------------------
-// UPDATE Wrestler Name
-// ---------------------------
-app.patch(["/api/live-tracker/update-wrestler", "/api/live-tracker/update-wrestler/"], (req, res) => {
-  const { leagueId, entrantNumber, newName } = req.body;
-
-  if (!leagueId || !entrantNumber || !newName) {
-    return res
-      .status(400)
-      .json({ error: "League ID, Entrant Number, and new name are required" });
-  }
-
-  const entrants = raffleResults[leagueId];
-  if (!entrants) {
-    return res.status(404).json({ error: "League not found" });
-  }
-
-  const entrant = entrants.find((e) => e.number === entrantNumber);
-  if (!entrant) {
-    return res.status(404).json({ error: "Entrant not found" });
-  }
-
-  entrant.name = newName;
-
-  res.json({ message: "Wrestler name updated", entrant });
-});
-
-// ---------------------------------
-// Start Express Server (Local Only)
-// ---------------------------------
-if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 4000;
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running locally on port ${PORT}`);
-  });
-}
-
-// ------------------------------
-// Export app for Vercel
-// ------------------------------
 export default app;

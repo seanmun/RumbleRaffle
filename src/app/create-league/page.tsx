@@ -1,19 +1,21 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+
+interface Participant {
+  name: string;
+  entrants: number;
+}
 
 export default function CreateLeague() {
-  const router = useRouter();
   const [step, setStep] = useState(1);
   const [leagueName, setLeagueName] = useState("");
   const [numParticipants, setNumParticipants] = useState(2);
-  const [participants, setParticipants] = useState<{ name: string; entrants: number }[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
   const [remainingEntrants, setRemainingEntrants] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ??
-  (process.env.NODE_ENV === "development" ? "http://localhost:4000" : "");
+  const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 
+    (process.env.NODE_ENV === "development" ? "http://localhost:4000" : "");
 
   useEffect(() => {
     if (step === 2) {
@@ -63,9 +65,9 @@ export default function CreateLeague() {
     }
 
     try {
-      console.log("📡 Sending Create League Request to:", `${API_URL}/create-league/`);
+      console.log("📡 Sending Create League Request to:", `${API_URL}/api/create-league`);
       
-      const response = await fetch(`${API_URL}/api/create-league`, { // 🔥 Ensure correct API path
+      const response = await fetch(`${API_URL}/api/create-league`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leagueName, participants }),
@@ -75,11 +77,9 @@ export default function CreateLeague() {
       console.log("✅ Response from Server:", data);
 
       if (data.leagueId) {
-        localStorage.setItem("currentLeagueId", data.leagueId);
-        localStorage.setItem("currentParticipants", JSON.stringify(participants));
-
         alert(`League Created! ID: ${data.leagueId}`);
-        router.push(`/raffle-room?leagueId=${data.leagueId}`);
+        // For now, just show the league ID - we'll create the league page next
+        console.log("League created with ID:", data.leagueId);
       } else {
         alert("⚠️ Error creating league. Please try again.");
       }
