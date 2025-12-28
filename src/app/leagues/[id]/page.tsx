@@ -1,6 +1,5 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
 import Header from '@/components/Header'
 
 export default async function LeaguePage({ params }: { params: Promise<{ id: string }> }) {

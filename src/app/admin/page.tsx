@@ -55,7 +55,7 @@ export default async function AdminPage() {
                 <p className="text-gray-400 text-sm">Add & manage wrestlers</p>
               </div>
             </div>
-            <p className="text-gray-300">Add new wrestlers to the database for both Men's and Women's events</p>
+            <p className="text-gray-300">Add new wrestlers to the database for both Men&apos;s and Women&apos;s events</p>
           </Link>
 
           {/* Live Event Control */}

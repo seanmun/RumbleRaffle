@@ -150,17 +150,17 @@ export default function CreateLeaguePage() {
               id="leagueType"
               required
               value={leagueType}
-              onChange={(e) => setLeagueType(e.target.value as any)}
+              onChange={(e) => setLeagueType(e.target.value as 'winner_takes_all' | 'points_based' | 'combined')}
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="winner_takes_all">Winner Takes All - Simple (whoever has the winner wins)</option>
               <option value="points_based">Points-Based - Placement + Eliminations</option>
-              <option value="combined">Combined Men's + Women's - Points from both events</option>
+              <option value="combined">Combined Men&apos;s + Women&apos;s - Points from both events</option>
             </select>
             <p className="text-gray-400 text-sm mt-2">
               {leagueType === 'winner_takes_all' && 'Simple mode: The participant with the Royal Rumble winner takes the prize pool.'}
               {leagueType === 'points_based' && 'Points awarded for placement (1st = 30pts, 2nd = 29pts...) + optional elimination bonuses.'}
-              {leagueType === 'combined' && 'Select both Men\'s and Women\'s events. Total points from both events combined.'}
+              {leagueType === 'combined' && 'Select both Men&apos;s and Women&apos;s events. Total points from both events combined.'}
             </p>
           </div>
 
@@ -189,7 +189,7 @@ export default function CreateLeaguePage() {
           {leagueType === 'combined' && (
             <div>
               <label htmlFor="secondaryEvent" className="block text-sm font-medium text-gray-300 mb-2">
-                Secondary Event (Women's) *
+                Secondary Event (Women&apos;s) *
               </label>
               <select
                 id="secondaryEvent"

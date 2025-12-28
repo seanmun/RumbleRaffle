@@ -29,6 +29,9 @@ export default function WrestlerManagementPage() {
   // Filter states
   const [searchQuery, setSearchQuery] = useState('')
   const [genderFilter, setGenderFilter] = useState<'all' | 'male' | 'female'>('all')
+  const [selectedEventId, setSelectedEventId] = useState('')
+  const [events, setEvents] = useState<any[]>([])
+  const [newEntrantNumber, setNewEntrantNumber] = useState('')
 
   useEffect(() => {
     checkAuth()
@@ -217,7 +220,7 @@ export default function WrestlerManagementPage() {
           <>
             {/* Add Wrestler Form */}
             <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-8">
-              <h2 className="text-xl font-bold text-white mb-4">Add Wrestler to {selectedEvent?.name}</h2>
+              <h2 className="text-xl font-bold text-white mb-4">Add Wrestler to Event</h2>
               <form onSubmit={handleAddWrestler} className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <input
                   type="number"

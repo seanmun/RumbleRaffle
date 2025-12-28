@@ -6,7 +6,9 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Header from '@/components/Header'
 
-export default function SignupPage() {
+export const dynamic = 'force-dynamic'
+
+function SignupForm() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -166,4 +168,8 @@ export default function SignupPage() {
       </div>
     </div>
   )
+}
+
+export default function SignupPage() {
+  return <SignupForm />
 }

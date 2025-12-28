@@ -107,7 +107,7 @@ export default async function DashboardPage() {
             </div>
           ) : (
             <div className="bg-gray-800 rounded-xl p-12 text-center border border-gray-700">
-              <p className="text-gray-400 mb-4">You haven't joined any leagues yet</p>
+              <p className="text-gray-400 mb-4">You haven&apos;t joined any leagues yet</p>
               <Link
                 href="/leagues/create"
                 className="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"

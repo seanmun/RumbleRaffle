@@ -35,11 +35,12 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "backend/**/*.ts",
     "next-env.d.ts",
     "docs/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "backend",
+    "prisma"
   ]
 }
