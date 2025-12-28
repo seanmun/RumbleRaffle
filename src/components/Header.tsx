@@ -1,55 +1,314 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { Home, Trophy, Settings, Menu, X, ChevronDown, LayoutDashboard, Plus } from "lucide-react";
 
-export default function Header() {
+type HeaderProps = {
+  user?: {
+    id: string
+    email?: string
+  }
+  profile?: {
+    name?: string
+    is_admin?: boolean
+  }
+  leagues?: Array<{
+    id: string
+    name: string
+    status: string
+  }>
+  onLogout?: () => void
+}
+
+export default function Header({ user, profile, leagues, onLogout }: HeaderProps = {}) {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [leaguesExpanded, setLeaguesExpanded] = useState(false);
+
+  const isActive = (path: string) => {
+    if (path === '/') return pathname === '/'
+    return pathname?.startsWith(path)
+  }
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
-    <header className="bg-slate-900 border-b border-slate-700 sticky top-0 z-40">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <div className="text-2xl">🤼‍♂️</div>
-            <span className="text-xl font-bold text-white">Rumble Raffle</span>
-          </Link>
+    <>
+      <header className="bg-gray-800/50 backdrop-blur-sm border-b border-gray-700 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden text-gray-300 hover:text-white p-2"
+              aria-label="Toggle menu"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              href="/" 
-              className={`text-sm font-medium transition-colors ${
-                pathname === '/' 
-                  ? 'text-yellow-400' 
-                  : 'text-slate-300 hover:text-white'
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              <div className="text-2xl">🤼‍♂️</div>
+              <span className="text-xl font-bold text-white">Rumble Raffle</span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/') && pathname === '/'
+                    ? 'text-purple-400'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                Home
+              </Link>
+
+              {user && (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className={`text-sm font-medium transition-colors ${
+                      isActive('/dashboard') || isActive('/leagues')
+                        ? 'text-purple-400'
+                        : 'text-gray-300 hover:text-white'
+                    }`}
+                  >
+                    My Leagues
+                  </Link>
+
+                  {profile?.is_admin && (
+                    <Link
+                      href="/admin"
+                      className={`text-sm font-medium transition-colors ${
+                        isActive('/admin')
+                          ? 'text-red-400'
+                          : 'text-gray-300 hover:text-white'
+                      }`}
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
+                </>
+              )}
+            </nav>
+
+            {/* Right side actions - Desktop */}
+            <div className="hidden md:flex items-center gap-3">
+              {user ? (
+                <span className="text-gray-400 text-sm hidden lg:block">
+                  {profile?.name || user.email}
+                </span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/login"
+                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors text-sm"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors text-sm"
+                  >
+                    Sign Up
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Mobile - User indicator or auth buttons */}
+            <div className="md:hidden">
+              {user ? (
+                <div className="text-purple-400 text-sm">
+                  {profile?.name?.split(' ')[0] || user.email?.split('@')[0]}
+                </div>
+              ) : (
+                <Link
+                  href="/login"
+                  className="text-purple-400 text-sm font-medium"
+                >
+                  Login
+                </Link>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={closeMobileMenu}
+        />
+      )}
+
+      {/* Mobile Sidebar Menu */}
+      <div
+        className={`fixed top-0 left-0 h-full w-64 bg-gray-900 border-r border-gray-700 z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col h-full">
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-700">
+            <div className="flex items-center space-x-2">
+              <div className="text-2xl">🤼‍♂️</div>
+              <span className="text-lg font-bold text-white">Menu</span>
+            </div>
+            <button
+              onClick={closeMobileMenu}
+              className="text-gray-400 hover:text-white"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Sidebar Navigation */}
+          <nav className="flex-1 p-4 space-y-2">
+            <Link
+              href="/"
+              onClick={closeMobileMenu}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                isActive('/') && pathname === '/'
+                  ? 'bg-purple-600 text-white'
+                  : 'text-gray-300 hover:bg-gray-800 hover:text-white'
               }`}
             >
-              Home
+              <Home className="w-5 h-5" />
+              <span>Home</span>
             </Link>
-            <Link 
-              href="/create-league" 
-              className={`text-sm font-medium transition-colors ${
-                pathname === '/create-league' 
-                  ? 'text-yellow-400' 
-                  : 'text-slate-300 hover:text-white'
-              }`}
-            >
-              Create League
-            </Link>
+
+            {user && (
+              <>
+                {/* My Leagues with Dropdown */}
+                <div>
+                  <button
+                    onClick={() => setLeaguesExpanded(!leaguesExpanded)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive('/dashboard') || isActive('/leagues')
+                        ? 'bg-purple-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    }`}
+                  >
+                    <Trophy className="w-5 h-5" />
+                    <span className="flex-1 text-left">My Leagues</span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${leaguesExpanded ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {leaguesExpanded && (
+                    <div className="mt-1 ml-4 space-y-1">
+                      <Link
+                        href="/dashboard"
+                        onClick={closeMobileMenu}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg"
+                      >
+                        <LayoutDashboard className="w-4 h-4" />
+                        <span>Dashboard</span>
+                      </Link>
+                      <Link
+                        href="/leagues/create"
+                        onClick={closeMobileMenu}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Create League</span>
+                      </Link>
+                      {leagues && leagues.length > 0 && (
+                        <>
+                          <div className="px-4 py-2 text-xs text-gray-500 uppercase tracking-wider">
+                            Your Leagues
+                          </div>
+                          {leagues.map((league) => (
+                            <Link
+                              key={league.id}
+                              href={`/leagues/${league.id}`}
+                              onClick={closeMobileMenu}
+                              className="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg"
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="truncate">{league.name}</span>
+                                <span className={`ml-2 px-2 py-0.5 text-xs rounded ${
+                                  league.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                                  league.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
+                                  'bg-yellow-500/20 text-yellow-400'
+                                }`}>
+                                  {league.status}
+                                </span>
+                              </div>
+                            </Link>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {profile?.is_admin && (
+                  <Link
+                    href="/admin"
+                    onClick={closeMobileMenu}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      isActive('/admin')
+                        ? 'bg-red-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    }`}
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span>Admin Panel</span>
+                  </Link>
+                )}
+              </>
+            )}
           </nav>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Link 
-              href="/create-league"
-              className="bg-yellow-600 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-            >
-              Create
-            </Link>
+          {/* Sidebar Footer */}
+          <div className="p-4 border-t border-gray-700">
+            {user ? (
+              <div className="space-y-3">
+                <div className="text-gray-400 text-sm px-4 truncate">
+                  {profile?.name || user.email}
+                </div>
+                {onLogout && (
+                  <button
+                    onClick={() => {
+                      closeMobileMenu();
+                      onLogout();
+                    }}
+                    className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-center rounded-lg font-medium transition-colors text-sm"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Link
+                  href="/login"
+                  onClick={closeMobileMenu}
+                  className="block w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-center rounded-lg font-medium transition-colors text-sm"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={closeMobileMenu}
+                  className="block w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-center rounded-lg font-medium transition-colors text-sm"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </header>
+    </>
   );
 }

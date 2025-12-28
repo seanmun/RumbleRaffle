@@ -5,17 +5,30 @@ backend/node_modules/
 # Next.js build output
 .next/
 out/
+build/
+dist/
+.vercel
+*.tsbuildinfo
+next-env.d.ts
 
-# Environment variables
+# Environment variables - ALL env files except .env.example
 .env
+.env.*
+!.env.example
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
 
 # Database
 *.db
 *.sqlite
+
+# SQL migrations (already applied)
+sql/archive/
 
 # Logs
 npm-debug.log*

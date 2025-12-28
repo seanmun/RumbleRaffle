@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,75 +7,127 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model League {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  status      String   @default("setup")
-  maxEntrants Int      @default(30)
-  
-  creatorName  String
-  creatorEmail String?
-  
-  isPublic     Boolean  @default(true)
-  accessCode   String?
-  
-  participants Participant[]
-  entrants     Entrant[]
-  events       Event[]
-  
-  @@map("leagues")
+model eliminations {
+  id                                                          String          @id
+  event_id                                                    String
+  eliminator_id                                               String
+  eliminated_id                                               String
+  timestamp                                                   DateTime        @default(now())
+  global_entrants_eliminations_eliminated_idToglobal_entrants global_entrants @relation("eliminations_eliminated_idToglobal_entrants", fields: [eliminated_id], references: [id], onDelete: Cascade)
+  global_entrants_eliminations_eliminator_idToglobal_entrants global_entrants @relation("eliminations_eliminator_idToglobal_entrants", fields: [eliminator_id], references: [id], onDelete: Cascade)
+  events                                                      events          @relation(fields: [event_id], references: [id], onDelete: Cascade)
 }
 
-model Participant {
-  id         String   @id @default(cuid())
-  name       String
-  email      String?
-  entryCount Int
-  totalPaid  Decimal? @default(0)
-  joinedAt   DateTime @default(now())
-  
-  leagueId String
-  league   League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  
-  entrants Entrant[]
-  
-  @@unique([leagueId, name])
-  @@map("participants")
+model events {
+  id              String            @id
+  name            String
+  year            Int
+  event_type      String
+  event_date      DateTime
+  status          String            @default("upcoming")
+  description     String?
+  created_at      DateTime          @default(now())
+  updated_at      DateTime
+  eliminations    eliminations[]
+  global_entrants global_entrants[]
+  leagues         leagues[]
+
+  @@unique([event_type, year])
 }
 
-model Entrant {
-  id           String    @id @default(cuid())
-  number       Int
-  wrestlerName String    @default("TBD")
-  status       String    @default("Active")
-  eliminatedAt DateTime?
-  eliminatedBy String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  
-  leagueId String
-  league   League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  
-  participantId String
-  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  
-  @@unique([leagueId, number])
-  @@map("entrants")
+model global_entrants {
+  id                                                       String                       @id
+  event_id                                                 String
+  entrant_number                                           Int
+  wrestler_name                                            String
+  is_eliminated                                            Boolean                      @default(false)
+  entered_at                                               DateTime?
+  eliminated_at                                            DateTime?
+  final_placement                                          Int?
+  created_at                                               DateTime                     @default(now())
+  updated_at                                               DateTime
+  eliminations_eliminations_eliminated_idToglobal_entrants eliminations[]               @relation("eliminations_eliminated_idToglobal_entrants")
+  eliminations_eliminations_eliminator_idToglobal_entrants eliminations[]               @relation("eliminations_eliminator_idToglobal_entrants")
+  events                                                   events                       @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  league_entrant_assignments                               league_entrant_assignments[]
+
+  @@unique([event_id, entrant_number])
 }
 
-model Event {
-  id          String   @id @default(cuid())
-  type        String
-  title       String
-  description String?
-  data        Json?
-  timestamp   DateTime @default(now())
-  
-  leagueId String
-  league   League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
-  
-  @@map("events")
+model league_entrant_assignments {
+  id                String          @id
+  league_id         String
+  participant_id    String
+  global_entrant_id String
+  entrant_number    Int
+  points            Int             @default(0)
+  created_at        DateTime        @default(now())
+  global_entrants   global_entrants @relation(fields: [global_entrant_id], references: [id], onDelete: Cascade)
+  leagues           leagues         @relation(fields: [league_id], references: [id], onDelete: Cascade)
+  participants      participants    @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+
+  @@unique([league_id, entrant_number])
+}
+
+model league_memberships {
+  id        String   @id
+  league_id String
+  user_id   String
+  role      String   @default("member")
+  has_paid  Boolean  @default(false)
+  joined_at DateTime @default(now())
+  leagues   leagues  @relation(fields: [league_id], references: [id], onDelete: Cascade)
+  users     users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([league_id, user_id])
+}
+
+model leagues {
+  id                         String                       @id
+  name                       String
+  event_id                   String
+  creator_id                 String
+  buy_in                     Decimal?                     @default(0) @db.Decimal(10, 2)
+  total_prize_pool           Decimal                      @default(0) @db.Decimal(10, 2)
+  payout_structure           Json?
+  elimination_points_enabled Boolean                      @default(false)
+  points_per_elimination     Int                          @default(5)
+  is_public                  Boolean                      @default(false)
+  join_code                  String?                      @unique
+  status                     String                       @default("setup")
+  created_at                 DateTime                     @default(now())
+  updated_at                 DateTime
+  league_entrant_assignments league_entrant_assignments[]
+  league_memberships         league_memberships[]
+  users                      users                        @relation(fields: [creator_id], references: [id])
+  events                     events                       @relation(fields: [event_id], references: [id], onDelete: Cascade)
+  participants               participants[]
+}
+
+model participants {
+  id                         String                       @id
+  league_id                  String
+  user_id                    String?
+  name                       String
+  entrant_count              Int
+  total_buy_in               Decimal                      @default(0) @db.Decimal(10, 2)
+  total_score                Int                          @default(0)
+  created_at                 DateTime                     @default(now())
+  league_entrant_assignments league_entrant_assignments[]
+  leagues                    leagues                      @relation(fields: [league_id], references: [id], onDelete: Cascade)
+  users                      users?                       @relation(fields: [user_id], references: [id])
+
+  @@unique([league_id, name])
+}
+
+model users {
+  id                 String               @id
+  email              String               @unique
+  name               String?
+  avatar_url         String?
+  created_at         DateTime             @default(now())
+  updated_at         DateTime
+  league_memberships league_memberships[]
+  leagues            leagues[]
+  participants       participants[]
 }
