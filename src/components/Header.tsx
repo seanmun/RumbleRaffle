@@ -54,7 +54,10 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
               <div className="text-2xl">🤼‍♂️</div>
-              <span className="text-xl font-bold text-white">Rumble Raffle</span>
+              <span className="text-xl font-[family-name:var(--font-bevan)] text-white">
+                <span className="hidden md:inline">Rumble Raffle</span>
+                <span className="md:hidden">RR</span>
+              </span>
             </Link>
 
             {/* Desktop Navigation */}

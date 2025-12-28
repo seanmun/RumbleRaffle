@@ -1,6 +1,14 @@
 import type { Metadata } from "next";
+import { Bevan } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
+
+const bevan = Bevan({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-bevan',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: "Rumble Raffle - Wrestling League Manager",
@@ -14,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased bg-slate-950 text-white min-h-screen flex flex-col font-sans">
+      <body className={`${bevan.variable} antialiased bg-slate-950 text-white min-h-screen flex flex-col font-sans`}>
         <main className="flex-1">
           {children}
         </main>

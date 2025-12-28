@@ -26,8 +26,11 @@ export default async function HomePage() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <div className="text-6xl mb-6">🤼‍♂️</div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Rumble <span className="text-purple-400">Raffle</span>
+            <h1 className="text-5xl md:text-7xl font-[family-name:var(--font-bevan)] mb-6 tracking-wider" style={{
+              textShadow: '4px 4px 0 #7c3aed, -2px -2px 0 #7c3aed, 2px -2px 0 #7c3aed, -2px 2px 0 #7c3aed, 2px 2px 0 #7c3aed, 4px 0 0 #7c3aed, -4px 0 0 #7c3aed, 0 4px 0 #7c3aed, 0 -4px 0 #7c3aed',
+              color: '#ffffff'
+            }}>
+              Rumble Raffle
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
               Create wrestling raffle leagues with friends. Perfect for Royal Rumble watch parties,

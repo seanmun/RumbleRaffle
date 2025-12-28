@@ -9,7 +9,7 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
               <div className="text-2xl">🤼‍♂️</div>
-              <span className="text-xl font-bold text-white">Rumble Raffle</span>
+              <span className="text-xl font-[family-name:var(--font-bevan)] text-white">Rumble Raffle</span>
             </div>
             <p className="text-slate-400 text-sm max-w-md">
               Create and manage wrestling-themed raffle leagues with friends. 
@@ -47,6 +47,11 @@ export default function Footer() {
                 <a href="https://seanmun.com/" className="text-slate-400 hover:text-white text-sm transition-colors">
                   Contact
                 </a>
+              </li>
+              <li>
+                <Link href="/media" className="text-slate-400 hover:text-white text-sm transition-colors">
+                  Media & Brand
+                </Link>
               </li>
               <li>
                 <Link href="/privacy" className="text-slate-400 hover:text-white text-sm transition-colors">
