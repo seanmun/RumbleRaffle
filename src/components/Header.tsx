@@ -1,8 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Home, Trophy, Settings, Menu, X, ChevronDown, LayoutDashboard, Plus } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Home, Trophy, Settings, Menu, X, ChevronDown, LayoutDashboard, Plus, User, LogOut } from "lucide-react";
 
 type HeaderProps = {
   user?: {
@@ -25,6 +25,9 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [leaguesExpanded, setLeaguesExpanded] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const desktopDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileDropdownRef = useRef<HTMLDivElement>(null);
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/'
@@ -32,6 +35,24 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
   }
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      const clickedOutsideDesktop = desktopDropdownRef.current && !desktopDropdownRef.current.contains(target);
+      const clickedOutsideMobile = mobileDropdownRef.current && !mobileDropdownRef.current.contains(target);
+
+      if (clickedOutsideDesktop && clickedOutsideMobile) {
+        setIsProfileDropdownOpen(false);
+      }
+    }
+
+    if (isProfileDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isProfileDropdownOpen]);
 
   return (
     <>
@@ -105,14 +126,61 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
             {/* Right side actions - Desktop */}
             <div className="hidden md:flex items-center gap-3">
               {user ? (
-                <span className="text-gray-400 text-sm hidden lg:block">
-                  {profile?.name || user.email}
-                </span>
+                <div className="relative" ref={desktopDropdownRef}>
+                  <button
+                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-700/50 transition-colors"
+                  >
+                    <div className="relative">
+                      <User className="w-4 h-4 text-gray-400" />
+                      {!profile?.name && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-gray-800"></span>
+                      )}
+                    </div>
+                    <span className="text-gray-300 text-sm">
+                      {profile?.name || user.email}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {isProfileDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 z-50">
+                      <div className="px-4 py-2 border-b border-gray-700">
+                        <p className="text-sm font-medium text-white truncate">
+                          {profile?.name || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Profile</span>
+                      </Link>
+                      {onLogout && (
+                        <button
+                          onClick={() => {
+                            setIsProfileDropdownOpen(false);
+                            onLogout();
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <Link
                     href="/login"
-                    className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg font-medium transition-colors text-sm"
+                    className="px-4 py-2 text-gray-300 hover:text-white font-medium transition-colors text-sm"
                   >
                     Login
                   </Link>
@@ -127,11 +195,55 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
             </div>
 
             {/* Mobile - User indicator or auth buttons */}
-            <div className="md:hidden">
+            <div className="md:hidden relative" ref={mobileDropdownRef}>
               {user ? (
-                <div className="text-purple-400 text-sm">
-                  {profile?.name?.split(' ')[0] || user.email?.split('@')[0]}
-                </div>
+                <>
+                  <button
+                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                    className="flex items-center gap-1 text-purple-400 text-sm"
+                  >
+                    <div className="relative">
+                      <User className="w-4 h-4" />
+                      {!profile?.name && (
+                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-gray-800"></span>
+                      )}
+                    </div>
+                    <span>{profile?.name?.split(' ')[0] || user.email?.split('@')[0]}</span>
+                  </button>
+
+                  {isProfileDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-xl py-1 z-50">
+                      <div className="px-4 py-2 border-b border-gray-700">
+                        <p className="text-sm font-medium text-white truncate">
+                          {profile?.name || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsProfileDropdownOpen(false)}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                      >
+                        <User className="w-4 h-4" />
+                        <span>Profile</span>
+                      </Link>
+                      {onLogout && (
+                        <button
+                          onClick={() => {
+                            setIsProfileDropdownOpen(false);
+                            onLogout();
+                          }}
+                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Logout</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </>
               ) : (
                 <Link
                   href="/login"

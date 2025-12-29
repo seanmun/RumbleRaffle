@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import Header from '@/components/Header'
 
@@ -25,12 +25,49 @@ export default async function AdminPage() {
     redirect('/dashboard')
   }
 
+  // Use admin client for fetching all data (bypasses RLS)
+  const adminClient = createAdminClient()
+
   // Get all events
-  const { data: events } = await supabase
+  const { data: events } = await adminClient
     .from('events')
     .select('*')
     .order('year', { ascending: false })
     .order('event_type', { ascending: true })
+
+  // Get leagues count
+  const { count: leaguesCount } = await adminClient
+    .from('leagues')
+    .select('*', { count: 'exact', head: true })
+
+  // Get 5 most recent leagues with participant count
+  const { data: recentLeagues } = await adminClient
+    .from('leagues')
+    .select(`
+      id,
+      name,
+      status,
+      created_at,
+      participants:participants(count)
+    `)
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  // Get users count
+  const { count: usersCount } = await adminClient
+    .from('users')
+    .select('*', { count: 'exact', head: true })
+
+  // Get all users (up to 10 most recent)
+  const { data: recentUsers, error: usersError } = await adminClient
+    .from('users')
+    .select('id, name, email, created_at, is_admin')
+    .order('created_at', { ascending: false })
+    .limit(10)
+
+  if (usersError) {
+    console.error('Error fetching users:', usersError)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
@@ -96,6 +133,116 @@ export default async function AdminPage() {
             <p className="text-gray-300">Create new Royal Rumble events and manage existing ones</p>
           </Link>
         </div>
+
+        {/* Leagues Statistics */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">Leagues Statistics</h2>
+            <div className="bg-purple-600/20 border border-purple-500 rounded-lg px-4 py-2">
+              <span className="text-purple-400 font-medium">Total Leagues: {leaguesCount || 0}</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-900/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">League Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date Created</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Participants</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {recentLeagues && recentLeagues.length > 0 ? (
+                    recentLeagues.map((league) => (
+                      <tr key={league.id} className="hover:bg-gray-700/30 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{league.name}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                          {new Date(league.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                          {Array.isArray(league.participants) ? league.participants.length : league.participants?.[0]?.count || 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            league.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
+                            league.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                            'bg-blue-500/20 text-blue-400'
+                          }`}>
+                            {league.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-4 text-center text-gray-400">No leagues found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        {/* Users Statistics */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">Users Statistics</h2>
+            <div className="bg-purple-600/20 border border-purple-500 rounded-lg px-4 py-2">
+              <span className="text-purple-400 font-medium">Total Users: {usersCount || 0}</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-900/50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Full Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Email Address</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Date Joined</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Admin</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {recentUsers && recentUsers.length > 0 ? (
+                    recentUsers.map((user) => (
+                      <tr key={user.id} className="hover:bg-gray-700/30 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">{user.name || 'N/A'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{user.email}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                          {new Date(user.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {user.is_admin ? (
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400">Admin</span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400">User</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-4 text-center text-gray-400">No users found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
 
         {/* Events Overview */}
         <section>
