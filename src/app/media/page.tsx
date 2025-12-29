@@ -11,7 +11,11 @@ export default function MediaPage() {
 
         {/* Header */}
         <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-[family-name:var(--font-bevan)] mb-4 text-white">
+          <h1 className="text-4xl md:text-5xl font-[family-name:var(--font-bevan)] mb-4" style={{
+            WebkitTextStroke: '2px #ca8a04',
+            WebkitTextFillColor: '#FFD700',
+            textShadow: '4px 4px 8px rgba(0, 0, 0, 0.5)'
+          }}>
             Media & Brand Guidelines
           </h1>
           <p className="text-xl text-gray-300">
@@ -71,6 +75,27 @@ export default function MediaPage() {
               </div>
             </div>
 
+            {/* Accent Colors */}
+            <div>
+              <h3 className="text-lg font-semibold text-purple-400 mb-3">Accent Colors</h3>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded bg-yellow-500 border-2 border-white"></div>
+                  <div>
+                    <p className="text-white font-semibold">Gold Accent</p>
+                    <p className="text-gray-400 font-mono text-sm">#eab308</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded bg-yellow-600 border-2 border-white"></div>
+                  <div>
+                    <p className="text-white font-semibold">Gold Hover</p>
+                    <p className="text-gray-400 font-mono text-sm">#ca8a04</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Background Colors */}
             <div>
               <h3 className="text-lg font-semibold text-purple-400 mb-3">Background Colors</h3>
@@ -118,6 +143,13 @@ export default function MediaPage() {
                 bg-gradient-to-r from-purple-600 to-purple-800
               </p>
               <div className="h-24 rounded bg-gradient-to-r from-purple-600 to-purple-800 border-2 border-white"></div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-purple-400 mb-2">Gold Accent Gradient</h3>
+              <p className="text-gray-300 font-mono text-sm mb-2">
+                bg-gradient-to-r from-yellow-500 to-yellow-600
+              </p>
+              <div className="h-24 rounded bg-gradient-to-r from-yellow-500 to-yellow-600 border-2 border-white"></div>
             </div>
             <div>
               <h3 className="text-lg font-semibold text-purple-400 mb-2">Grid Pattern (SVG)</h3>
@@ -194,13 +226,16 @@ export default function MediaPage() {
             {/* RR Abbreviation */}
             <div className="border-t border-gray-700 pt-6">
               <div className="flex items-center gap-4">
-                <div className="bg-gray-900 p-4 rounded-lg border border-gray-600">
-                  <p className="text-4xl font-[family-name:var(--font-bevan)] text-white">RR</p>
+                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-4 rounded-lg border-2 border-yellow-500 shadow-lg shadow-purple-500/30">
+                  <p className="text-4xl font-[family-name:var(--font-bevan)]" style={{
+                    WebkitTextStroke: '2px #ca8a04',
+                    WebkitTextFillColor: '#FFD700'
+                  }}>RR</p>
                 </div>
                 <div>
                   <p className="text-white font-semibold mb-1">RR Abbreviation</p>
                   <p className="text-gray-400 text-sm">
-                    Font: Bevan
+                    Font: Bevan with gold styling
                   </p>
                   <p className="text-gray-300 text-sm mt-2">
                     Used for mobile header and compact spaces

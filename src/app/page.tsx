@@ -21,14 +21,28 @@ export default async function HomePage() {
       <HeaderWithLogout user={user || undefined} profile={profile || undefined} />
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMDMpIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-20"></div>
+        {/* Video Background */}
+        <div className="absolute inset-0">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 w-full h-full object-cover opacity-20"
+          >
+            <source src="/ring2.mp4" type="video/mp4" />
+          </video>
+          {/* Gradient overlay to ensure text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 via-purple-900/50 to-gray-900/90"></div>
+        </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
             <div className="text-6xl mb-6">🤼‍♂️</div>
             <h1 className="text-5xl md:text-7xl font-[family-name:var(--font-bevan)] mb-6 tracking-wider" style={{
-              textShadow: '4px 4px 0 #7c3aed, -2px -2px 0 #7c3aed, 2px -2px 0 #7c3aed, -2px 2px 0 #7c3aed, 2px 2px 0 #7c3aed, 4px 0 0 #7c3aed, -4px 0 0 #7c3aed, 0 4px 0 #7c3aed, 0 -4px 0 #7c3aed',
-              color: '#ffffff'
+              WebkitTextStroke: '2px #ca8a04',
+              WebkitTextFillColor: '#FFD700',
+              textShadow: '4px 4px 8px rgba(0, 0, 0, 0.5)'
             }}>
               Rumble Raffle
             </h1>
@@ -39,7 +53,7 @@ export default async function HomePage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href={user ? "/dashboard" : "/signup"}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition-all hover:scale-105 hover:shadow-lg"
+                className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-gray-900 px-8 py-4 rounded-lg text-lg font-bold transition-all hover:scale-105 hover:shadow-lg hover:shadow-yellow-500/50"
               >
                 {user ? "Go to Dashboard" : "Get Started"} &raquo;
               </Link>
@@ -64,7 +78,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {/* Step 1 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-2xl font-bold text-gray-900 mx-auto mb-6 shadow-lg shadow-yellow-500/50">
                 1
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Create League</h3>
@@ -76,7 +90,7 @@ export default async function HomePage() {
 
             {/* Step 2 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-2xl font-bold text-gray-900 mx-auto mb-6 shadow-lg shadow-yellow-500/50">
                 2
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Share & Draw</h3>
@@ -88,7 +102,7 @@ export default async function HomePage() {
 
             {/* Step 3 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-2xl font-bold text-gray-900 mx-auto mb-6 shadow-lg shadow-yellow-500/50">
                 3
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Track Live</h3>

@@ -56,3 +56,6 @@ Thumbs.db
 
 # Prisma
 prisma/migrations/
+
+# Context/notes
+context.md
