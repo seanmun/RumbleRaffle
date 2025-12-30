@@ -120,7 +120,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
             {/* Step 1 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-2xl font-bold text-gray-900 mx-auto mb-6 shadow-lg shadow-yellow-500/50">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 shadow-lg shadow-purple-500/50">
                 1
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Create League</h3>
@@ -132,7 +132,7 @@ export default async function HomePage() {
 
             {/* Step 2 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-2xl font-bold text-gray-900 mx-auto mb-6 shadow-lg shadow-yellow-500/50">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 shadow-lg shadow-purple-500/50">
                 2
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Share & Draw</h3>
@@ -144,7 +144,7 @@ export default async function HomePage() {
 
             {/* Step 3 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center text-2xl font-bold text-gray-900 mx-auto mb-6 shadow-lg shadow-yellow-500/50">
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-600 to-purple-700 rounded-full flex items-center justify-center text-2xl font-bold text-white mx-auto mb-6 shadow-lg shadow-purple-500/50">
                 3
               </div>
               <h3 className="text-xl font-semibold text-white mb-4">Track Live</h3>

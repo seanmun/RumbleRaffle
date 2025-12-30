@@ -18,6 +18,15 @@ export const metadata: Metadata = {
     default: "Rumble Raffle - Wrestling Raffle League Manager for Royal Rumble Watch Parties",
     template: "%s | Rumble Raffle"
   },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/logo.svg', sizes: '128x128', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/logo-512.svg', sizes: '512x512', type: 'image/svg+xml' },
+    ],
+  },
   description: "Create and manage wrestling-themed raffle leagues with friends. Perfect for Royal Rumble watch parties and wrestling events. Free wrestling fantasy league platform with live tracking, random number drawing, and real-time leaderboards.",
   keywords: [
     "wrestling raffle",
