@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Upload, Plus, Search, Filter, Edit2, X } from 'lucide-react'
+import { sanitizeName, sanitizeUrl } from '@/lib/sanitize'
 
 type Wrestler = {
   id: string
@@ -188,9 +189,9 @@ export default function WrestlerManagementPage() {
       const { error: insertError } = await supabase
         .from('wrestler_pool')
         .insert({
-          name: newWrestlerName.trim(),
+          name: sanitizeName(newWrestlerName),
           gender: newWrestlerGender,
-          image_url: newWrestlerImageUrl.trim() || null,
+          image_url: newWrestlerImageUrl.trim() ? sanitizeUrl(newWrestlerImageUrl) : null,
           is_active: true
         })
 
@@ -250,9 +251,9 @@ export default function WrestlerManagementPage() {
       const { error: updateError } = await supabase
         .from('wrestler_pool')
         .update({
-          name: editName.trim(),
+          name: sanitizeName(editName),
           gender: editGender,
-          image_url: editImageUrl.trim() || null,
+          image_url: editImageUrl.trim() ? sanitizeUrl(editImageUrl) : null,
           is_active: editIsActive
         })
         .eq('id', editingWrestler.id)
@@ -278,20 +279,61 @@ export default function WrestlerManagementPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Security: Validate file size (max 1MB)
+    const maxSize = 1 * 1024 * 1024 // 1MB
+    if (file.size > maxSize) {
+      setError('CSV file is too large. Maximum size is 1MB.')
+      e.target.value = '' // Reset file input
+      return
+    }
+
+    // Security: Validate file type
+    if (!file.name.endsWith('.csv')) {
+      setError('Please upload a CSV file (.csv extension required)')
+      e.target.value = ''
+      return
+    }
+
     setCsvFile(file)
     const reader = new FileReader()
 
     reader.onload = (event) => {
       const text = event.target?.result as string
+
+      // Security: Validate file size after reading
+      if (text.length > maxSize) {
+        setError('CSV content is too large')
+        setCsvFile(null)
+        return
+      }
+
       const lines = text.split('\n').filter(line => line.trim())
+
+      // Security: Limit number of wrestlers per upload
+      if (lines.length > 1001) { // 1000 wrestlers + header
+        setError('CSV contains too many rows. Maximum 1000 wrestlers per upload.')
+        setCsvFile(null)
+        return
+      }
 
       // Parse CSV (expecting: name,gender,image_url)
       const parsed = lines.slice(1).map(line => {
         const [name, gender, image_url] = line.split(',').map(s => s.trim())
-        return { name, gender, image_url }
-      })
+
+        // Security: Sanitize inputs to prevent XSS
+        return {
+          name: sanitizeName(name),
+          gender: sanitizeName(gender),
+          image_url: image_url ? sanitizeUrl(image_url) : undefined
+        }
+      }).filter(w => w.name) // Remove empty rows
 
       setCsvPreview(parsed)
+    }
+
+    reader.onerror = () => {
+      setError('Failed to read CSV file')
+      setCsvFile(null)
     }
 
     reader.readAsText(file)

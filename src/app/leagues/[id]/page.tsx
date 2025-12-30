@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Header from '@/components/Header'
+import Badge from '@/components/Badge'
 
 export default async function LeaguePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -69,27 +70,30 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
       <div className="max-w-6xl mx-auto py-12 px-4">
         {/* Page Header */}
         <div className="mb-8">
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2">{league.name}</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">{league.name}</h1>
               <p className="text-gray-400">
                 {league.league_type === 'winner_takes_all' && 'Winner Takes All'}
                 {league.league_type === 'points_based' && 'Points-Based Scoring'}
                 {league.league_type === 'combined' && 'Combined Men\'s & Women\'s Events'}
               </p>
             </div>
-            <span className={`px-4 py-2 rounded-lg text-sm font-medium ${
-              league.status === 'active' ? 'bg-green-500/20 text-green-400' :
-              league.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
-              'bg-yellow-500/20 text-yellow-400'
-            }`}>
+            <Badge
+              variant={
+                league.status === 'active' ? 'success' :
+                league.status === 'completed' ? 'neutral' :
+                'warning'
+              }
+              size="lg"
+            >
               {league.status}
-            </span>
+            </Badge>
           </div>
         </div>
 
         {/* League Info */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
             <p className="text-gray-400 text-sm">Buy-in</p>
             <p className="text-2xl font-bold text-white">${parseFloat(league.buy_in || '0').toFixed(2)}</p>
@@ -115,7 +119,9 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
           <div className="px-6 py-4 border-b border-gray-700">
             <h2 className="text-2xl font-bold text-white">Leaderboard</h2>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-700/50">
                 <tr>
@@ -153,14 +159,15 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-2">
                         {participant.entrants.map((entrant, i) => (
-                          <span
+                          <Badge
                             key={i}
-                            className={`px-2 py-1 rounded text-xs ${
-                              entrant.final_placement === 1 ? 'bg-yellow-500/20 text-yellow-400 font-bold' :
-                              entrant.final_placement && entrant.final_placement <= 3 ? 'bg-purple-500/20 text-purple-400' :
-                              entrant.is_eliminated ? 'bg-red-500/20 text-red-400' :
-                              'bg-gray-700 text-gray-300'
-                            }`}
+                            variant={
+                              entrant.final_placement === 1 ? 'warning' :
+                              entrant.final_placement && entrant.final_placement <= 3 ? 'info' :
+                              entrant.is_eliminated ? 'danger' :
+                              'neutral'
+                            }
+                            size="sm"
                           >
                             #{entrant.entrant_number} {entrant.wrestler_name}
                             {entrant.final_placement && ` (${entrant.final_placement}${
@@ -168,7 +175,7 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
                               entrant.final_placement === 2 ? 'nd' :
                               entrant.final_placement === 3 ? 'rd' : 'th'
                             })`}
-                          </span>
+                          </Badge>
                         ))}
                       </div>
                     </td>
@@ -179,6 +186,55 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden divide-y divide-gray-700">
+            {participantsWithScores?.map((participant, index) => (
+              <div
+                key={participant.id}
+                className={`p-4 ${index === 0 ? 'bg-yellow-500/10' : ''}`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className={`text-2xl font-bold ${
+                      index === 0 ? 'text-yellow-400' :
+                      index === 1 ? 'text-gray-300' :
+                      index === 2 ? 'text-orange-400' :
+                      'text-gray-400'
+                    }`}>
+                      #{index + 1}
+                    </span>
+                    <div>
+                      <p className="text-white font-medium text-lg">{participant.name}</p>
+                      <p className="text-gray-400 text-sm">{participant.entrant_count} entrants</p>
+                    </div>
+                  </div>
+                  <p className="text-2xl font-bold text-white">{participant.calculated_score}</p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {participant.entrants.map((entrant, i) => (
+                    <Badge
+                      key={i}
+                      variant={
+                        entrant.final_placement === 1 ? 'warning' :
+                        entrant.final_placement && entrant.final_placement <= 3 ? 'info' :
+                        entrant.is_eliminated ? 'danger' :
+                        'neutral'
+                      }
+                      size="sm"
+                    >
+                      #{entrant.entrant_number} {entrant.wrestler_name}
+                      {entrant.final_placement && ` (${entrant.final_placement}${
+                        entrant.final_placement === 1 ? 'st' :
+                        entrant.final_placement === 2 ? 'nd' :
+                        entrant.final_placement === 3 ? 'rd' : 'th'
+                      })`}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

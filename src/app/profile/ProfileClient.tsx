@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { User, Mail, Trophy, Bell } from 'lucide-react'
+import { sanitizeName } from '@/lib/sanitize'
 
 type ProfileClientProps = {
   user: {
@@ -34,10 +35,19 @@ export default function ProfileClient({ user, profile, leaguesCount }: ProfileCl
     setSuccess(null)
     setError(null)
 
+    // Security: Sanitize user input before saving to database
+    const sanitizedName = sanitizeName(name)
+
+    if (sanitizedName.length > 100) {
+      setError('Name is too long (maximum 100 characters)')
+      setLoading(false)
+      return
+    }
+
     const { error: updateError } = await supabase
       .from('users')
       .update({
-        name,
+        name: sanitizedName,
         email_rumble_reminders: rumbleReminders,
         email_league_results: leagueResults,
         email_announcements: announcements,

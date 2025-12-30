@@ -1,8 +1,10 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { Home, Trophy, Settings, Menu, X, ChevronDown, LayoutDashboard, Plus, User, LogOut } from "lucide-react";
+import { createClient } from '@/lib/supabase/client'
+import Logo from './Logo'
 
 type HeaderProps = {
   user?: {
@@ -18,16 +20,23 @@ type HeaderProps = {
     name: string
     status: string
   }>
-  onLogout?: () => void
 }
 
-export default function Header({ user, profile, leagues, onLogout }: HeaderProps = {}) {
+export default function Header({ user, profile, leagues }: HeaderProps = {}) {
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [leaguesExpanded, setLeaguesExpanded] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const desktopDropdownRef = useRef<HTMLDivElement>(null);
   const mobileDropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/'
@@ -62,8 +71,10 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden text-gray-300 hover:text-white p-2"
-              aria-label="Toggle menu"
+              className="md:hidden text-gray-300 hover:text-white p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900 rounded"
+              aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {isMobileMenuOpen ? (
                 <X className="w-6 h-6" />
@@ -74,7 +85,7 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
 
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
-              <div className="text-2xl">🤼‍♂️</div>
+              <Logo size="sm" />
               <span className="text-xl font-[family-name:var(--font-bevan)] text-white">
                 <span className="hidden md:inline">Rumble Raffle</span>
                 <span className="md:hidden">RR</span>
@@ -82,7 +93,7 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
+            <nav className="hidden md:flex items-center space-x-6" aria-label="Main navigation">
               <Link
                 href="/"
                 className={`text-sm font-medium transition-colors ${
@@ -161,18 +172,16 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
                         <User className="w-4 h-4" />
                         <span>Profile</span>
                       </Link>
-                      {onLogout && (
-                        <button
-                          onClick={() => {
-                            setIsProfileDropdownOpen(false);
-                            onLogout();
-                          }}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          <span>Logout</span>
-                        </button>
-                      )}
+                      <button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -229,18 +238,16 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
                         <User className="w-4 h-4" />
                         <span>Profile</span>
                       </Link>
-                      {onLogout && (
-                        <button
-                          onClick={() => {
-                            setIsProfileDropdownOpen(false);
-                            onLogout();
-                          }}
-                          className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          <span>Logout</span>
-                        </button>
-                      )}
+                      <button
+                        onClick={() => {
+                          setIsProfileDropdownOpen(false);
+                          handleLogout();
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
                     </div>
                   )}
                 </>
@@ -275,7 +282,7 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
           {/* Sidebar Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
             <div className="flex items-center space-x-2">
-              <div className="text-2xl">🤼‍♂️</div>
+              <Logo size="sm" />
               <span className="text-lg font-bold text-white">Menu</span>
             </div>
             <button
@@ -391,17 +398,15 @@ export default function Header({ user, profile, leagues, onLogout }: HeaderProps
                 <div className="text-gray-400 text-sm px-4 truncate">
                   {profile?.name || user.email}
                 </div>
-                {onLogout && (
-                  <button
-                    onClick={() => {
-                      closeMobileMenu();
-                      onLogout();
-                    }}
-                    className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-center rounded-lg font-medium transition-colors text-sm"
-                  >
-                    Logout
-                  </button>
-                )}
+                <button
+                  onClick={() => {
+                    closeMobileMenu();
+                    handleLogout();
+                  }}
+                  className="w-full px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-center rounded-lg font-medium transition-colors text-sm"
+                >
+                  Logout
+                </button>
               </div>
             ) : (
               <div className="space-y-2">

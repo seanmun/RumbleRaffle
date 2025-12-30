@@ -1,7 +1,9 @@
+import { Suspense } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import HeaderWithLogout from '@/components/HeaderWithLogout'
+import Header from '@/components/Header'
 import ProfileClient from './ProfileClient'
+import { DashboardSkeleton } from '@/components/LoadingSkeleton'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -28,12 +30,14 @@ export default async function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      <HeaderWithLogout user={user} profile={profile || undefined} />
-      <ProfileClient
-        user={user}
-        profile={profile || undefined}
-        leaguesCount={leaguesCount || 0}
-      />
+      <Header user={user} profile={profile || undefined} />
+      <Suspense fallback={<DashboardSkeleton />}>
+        <ProfileClient
+          user={user}
+          profile={profile || undefined}
+          leaguesCount={leaguesCount || 0}
+        />
+      </Suspense>
     </div>
   )
 }

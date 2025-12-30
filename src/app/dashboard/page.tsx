@@ -1,7 +1,9 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
-import DashboardHeader from '@/components/DashboardHeader'
+import Header from '@/components/Header'
+import Badge from '@/components/Badge'
+import Button from '@/components/Button'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -43,9 +45,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      <DashboardHeader
+      <Header
         user={user}
-        profile={profile}
+        profile={profile || undefined}
         leagues={headerLeagues}
       />
 
@@ -60,11 +62,8 @@ export default async function DashboardPage() {
         <section className="mb-12">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-white">Active Leagues</h2>
-            <Link
-              href="/leagues/create"
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
-            >
-              Create League
+            <Link href="/leagues/create">
+              <Button variant="primary">Create League</Button>
             </Link>
           </div>
 
@@ -84,13 +83,15 @@ export default async function DashboardPage() {
                     <span className="text-purple-400 text-sm font-medium">
                       {league.creator_id === user.id ? 'League Manager' : 'Member'}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      league.status === 'active' ? 'bg-green-500/20 text-green-400' :
-                      league.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
-                      'bg-yellow-500/20 text-yellow-400'
-                    }`}>
+                    <Badge
+                      variant={
+                        league.status === 'active' ? 'success' :
+                        league.status === 'completed' ? 'neutral' :
+                        'warning'
+                      }
+                    >
                       {league.status}
-                    </span>
+                    </Badge>
                   </div>
                   {league.buy_in && parseFloat(league.buy_in) > 0 && (
                     <div className="mt-4 pt-4 border-t border-gray-700">
@@ -108,11 +109,8 @@ export default async function DashboardPage() {
           ) : (
             <div className="bg-gray-800 rounded-xl p-12 text-center border border-gray-700">
               <p className="text-gray-400 mb-4">You haven&apos;t joined any leagues yet</p>
-              <Link
-                href="/leagues/create"
-                className="inline-block px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
-              >
-                Create Your First League
+              <Link href="/leagues/create">
+                <Button variant="primary" size="lg">Create Your First League</Button>
               </Link>
             </div>
           )}
@@ -132,13 +130,15 @@ export default async function DashboardPage() {
                     <h3 className="text-xl font-bold text-white mb-2">{event.name}</h3>
                     <p className="text-gray-400 text-sm">{event.description}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                    event.status === 'completed' ? 'bg-gray-500/20 text-gray-400' :
-                    event.status === 'live' ? 'bg-red-500/20 text-red-400' :
-                    'bg-green-500/20 text-green-400'
-                  }`}>
+                  <Badge
+                    variant={
+                      event.status === 'completed' ? 'neutral' :
+                      event.status === 'live' ? 'danger' :
+                      'success'
+                    }
+                  >
                     {event.status}
-                  </span>
+                  </Badge>
                 </div>
                 <p className="text-gray-500 text-sm">
                   {new Date(event.event_date).toLocaleDateString('en-US', {

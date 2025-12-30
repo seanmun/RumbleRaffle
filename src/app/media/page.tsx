@@ -1,4 +1,24 @@
 import Link from "next/link";
+import Logo from "@/components/Logo";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Media & Brand Guidelines",
+  description: "Rumble Raffle brand assets, logo usage guidelines, color palette, typography, and design resources for media and press.",
+  keywords: ["rumble raffle brand", "media kit", "press kit", "brand guidelines", "logo download"],
+  openGraph: {
+    title: "Rumble Raffle Media & Brand Guidelines",
+    description: "Brand assets and design guidelines for Rumble Raffle",
+    type: "website",
+  },
+  alternates: {
+    canonical: `${process.env.NEXT_PUBLIC_APP_URL || 'https://rumbleraffle.com'}/media`,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function MediaPage() {
   return (
@@ -205,42 +225,63 @@ export default function MediaPage() {
           </div>
         </section>
 
-        {/* Brand Icons */}
+        {/* Brand Logo */}
         <section className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-          <h2 className="text-2xl font-bold text-white mb-4">Brand Icons</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Brand Logo</h2>
           <div className="space-y-6">
-            {/* Wrestling Emoji */}
+            {/* RR Logo */}
             <div className="flex items-center gap-4">
-              <div className="text-6xl">🤼‍♂️</div>
+              <Logo size="xl" />
               <div>
-                <p className="text-white font-semibold mb-1">Wrestling Emoji</p>
+                <p className="text-white font-semibold mb-1">RR Logo</p>
                 <p className="text-gray-400 text-sm">
-                  Unicode: U+1F93C U+200D U+2642 U+FE0F
+                  Font: Bevan with gold styling on purple gradient
                 </p>
                 <p className="text-gray-300 text-sm mt-2">
-                  Used as the brand icon across the platform
+                  Primary brand logo used across the platform
                 </p>
               </div>
             </div>
 
-            {/* RR Abbreviation */}
+            {/* Logo Sizes */}
             <div className="border-t border-gray-700 pt-6">
-              <div className="flex items-center gap-4">
-                <div className="bg-gradient-to-br from-purple-600 to-purple-800 p-4 rounded-lg border-2 border-yellow-500 shadow-lg shadow-purple-500/30">
-                  <p className="text-4xl font-[family-name:var(--font-bevan)]" style={{
-                    WebkitTextStroke: '2px #ca8a04',
-                    WebkitTextFillColor: '#FFD700'
-                  }}>RR</p>
+              <p className="text-white font-semibold mb-4">Available Sizes</p>
+              <div className="flex items-end gap-6">
+                <div className="text-center">
+                  <Logo size="sm" className="mb-2" />
+                  <p className="text-gray-400 text-xs">Small</p>
                 </div>
-                <div>
-                  <p className="text-white font-semibold mb-1">RR Abbreviation</p>
-                  <p className="text-gray-400 text-sm">
-                    Font: Bevan with gold styling
-                  </p>
-                  <p className="text-gray-300 text-sm mt-2">
-                    Used for mobile header and compact spaces
-                  </p>
+                <div className="text-center">
+                  <Logo size="md" className="mb-2" />
+                  <p className="text-gray-400 text-xs">Medium</p>
                 </div>
+                <div className="text-center">
+                  <Logo size="lg" className="mb-2" />
+                  <p className="text-gray-400 text-xs">Large</p>
+                </div>
+                <div className="text-center">
+                  <Logo size="xl" className="mb-2" />
+                  <p className="text-gray-400 text-xs">Extra Large</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Technical Details */}
+            <div className="border-t border-gray-700 pt-6">
+              <p className="text-white font-semibold mb-2">Technical Details</p>
+              <div className="bg-gray-900 p-4 rounded-lg space-y-2 text-sm">
+                <p className="text-gray-300">
+                  <span className="text-purple-400">Background:</span> Purple gradient (from-purple-600 to-purple-800)
+                </p>
+                <p className="text-gray-300">
+                  <span className="text-purple-400">Border:</span> 2px solid yellow-500 (#eab308)
+                </p>
+                <p className="text-gray-300">
+                  <span className="text-purple-400">Text:</span> Gold fill (#FFD700) with gold stroke (#ca8a04)
+                </p>
+                <p className="text-gray-300">
+                  <span className="text-purple-400">Shadow:</span> Purple glow (purple-500/30)
+                </p>
               </div>
             </div>
           </div>

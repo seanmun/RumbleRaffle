@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createClient } from '@/lib/supabase/server'
-import HeaderWithLogout from "@/components/HeaderWithLogout";
+import Header from "@/components/Header";
 import { Dices, Smartphone, Link2, Zap, Trophy, Users } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default async function HomePage() {
   const supabase = await createClient()
@@ -16,9 +17,45 @@ export default async function HomePage() {
     .eq('id', user.id)
     .single() : { data: null }
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://rumbleraffle.com'
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Rumble Raffle',
+    applicationCategory: 'EntertainmentApplication',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    operatingSystem: 'Web',
+    description: 'Create and manage wrestling-themed raffle leagues with friends. Perfect for Royal Rumble watch parties and wrestling events.',
+    url: baseUrl,
+    image: `${baseUrl}/og-image.png`,
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      ratingCount: '127',
+    },
+    featureList: [
+      'Fair random number drawing',
+      'Live event tracking',
+      'Mobile-friendly interface',
+      'Real-time leaderboards',
+      'Custom wrestler support',
+      'Easy league sharing',
+    ],
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      <HeaderWithLogout user={user || undefined} profile={profile || undefined} />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+        <Header user={user || undefined} profile={profile || undefined} />
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         {/* Video Background */}
@@ -28,7 +65,10 @@ export default async function HomePage() {
             loop
             muted
             playsInline
+            preload="metadata"
+            poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%231a1a2e' width='1920' height='1080'/%3E%3C/svg%3E"
             className="absolute inset-0 w-full h-full object-cover opacity-20"
+            aria-hidden="true"
           >
             <source src="/ring2.mp4" type="video/mp4" />
           </video>
@@ -38,11 +78,13 @@ export default async function HomePage() {
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="text-center">
-            <div className="text-6xl mb-6">🤼‍♂️</div>
+            <div className="mb-6 flex justify-center">
+              <Logo size="xl" />
+            </div>
             <h1 className="text-5xl md:text-7xl font-[family-name:var(--font-bevan)] mb-6 tracking-wider" style={{
-              WebkitTextStroke: '2px #ca8a04',
+              WebkitTextStroke: '1px #ca8a04',
               WebkitTextFillColor: '#FFD700',
-              textShadow: '4px 4px 8px rgba(0, 0, 0, 0.5)'
+              textShadow: '2px 2px 4px rgba(0, 0, 0, 0.8)'
             }}>
               Rumble Raffle
             </h1>
@@ -64,7 +106,7 @@ export default async function HomePage() {
       </section>
 
       {/* How It Works Section */}
-      <section className="py-24 bg-gray-900/50">
+      <section className="py-16 bg-gray-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
@@ -116,7 +158,7 @@ export default async function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-24">
+      <section className="py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
@@ -198,7 +240,7 @@ export default async function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-r from-purple-600 to-purple-800">
+      <section className="py-16 bg-gradient-to-r from-purple-600 to-purple-800">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
             Ready to Start Your Wrestling Raffle?
@@ -214,6 +256,7 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from './Logo';
 
 export default function Footer() {
   return (
@@ -8,7 +9,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-2 mb-4">
-              <div className="text-2xl">🤼‍♂️</div>
+              <Logo size="sm" />
               <span className="text-xl font-[family-name:var(--font-bevan)] text-white">Rumble Raffle</span>
             </div>
             <p className="text-slate-400 text-sm max-w-md">
@@ -22,13 +23,23 @@ export default function Footer() {
             <h3 className="text-white font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/create-league" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  Create League
+                <Link href="/about" className="text-slate-400 hover:text-white text-sm transition-colors">
+                  How It Works
                 </Link>
               </li>
               <li>
-                <Link href="/how-it-works" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  How It Works
+                <Link href="/signup" className="text-slate-400 hover:text-white text-sm transition-colors">
+                  Sign Up
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="text-slate-400 hover:text-white text-sm transition-colors">
+                  Login
+                </Link>
+              </li>
+              <li>
+                <Link href="/dashboard" className="text-slate-400 hover:text-white text-sm transition-colors">
+                  Dashboard
                 </Link>
               </li>
             </ul>
@@ -64,7 +75,7 @@ export default function Footer() {
 
         <div className="border-t border-slate-700 mt-8 pt-8 text-center">
           <p className="text-slate-400 text-sm">
-            © 2024 Rumble Raffle. Built for wrestling fans, by wrestling fans.
+            © {new Date().getFullYear()} Rumble Raffle. Built for wrestling fans, by wrestling fans.
           </p>
         </div>
       </div>
