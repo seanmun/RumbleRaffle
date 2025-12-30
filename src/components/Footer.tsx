@@ -13,63 +13,66 @@ export default function Footer() {
               <span className="text-xl font-[family-name:var(--font-bevan)] text-white">Rumble Raffle</span>
             </div>
             <p className="text-slate-400 text-sm max-w-md">
-              Create and manage wrestling-themed raffle leagues with friends. 
+              Create and manage wrestling-themed raffle leagues with friends.
               Perfect for Royal Rumble watch parties and wrestling events.
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/about" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  How It Works
-                </Link>
-              </li>
-              <li>
-                <Link href="/signup" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  Sign Up
-                </Link>
-              </li>
-              <li>
-                <Link href="/login" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  Login
-                </Link>
-              </li>
-              <li>
-                <Link href="/dashboard" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  Dashboard
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Quick Links & Support - 2 columns on mobile, part of 4 column grid on desktop */}
+          <div className="col-span-1 grid grid-cols-2 gap-8 md:contents">
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Quick Links</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link href="/about" className="text-slate-400 hover:text-white text-sm transition-colors">
+                    How It Works
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/signup" className="text-slate-400 hover:text-white text-sm transition-colors">
+                    Sign Up
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/login" className="text-slate-400 hover:text-white text-sm transition-colors">
+                    Login
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard" className="text-slate-400 hover:text-white text-sm transition-colors">
+                    Dashboard
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Support */}
-          <div>
-            <h3 className="text-white font-semibold mb-4">Support</h3>
-            <ul className="space-y-2">
-              <li>
-                <a href="https://github.com/your-username/rumble-raffle" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  GitHub
-                </a>
-              </li>
-              <li>
-                <a href="https://seanmun.com/" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  Contact
-                </a>
-              </li>
-              <li>
-                <Link href="/media" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  Media & Brand
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-slate-400 hover:text-white text-sm transition-colors">
-                  Privacy
-                </Link>
-              </li>
-            </ul>
+            {/* Support */}
+            <div>
+              <h3 className="text-white font-semibold mb-4">Support</h3>
+              <ul className="space-y-2">
+                <li>
+                  <a href="https://github.com/your-username/rumble-raffle" className="text-slate-400 hover:text-white text-sm transition-colors">
+                    GitHub
+                  </a>
+                </li>
+                <li>
+                  <a href="https://seanmun.com/" className="text-slate-400 hover:text-white text-sm transition-colors">
+                    Contact
+                  </a>
+                </li>
+                <li>
+                  <Link href="/media" className="text-slate-400 hover:text-white text-sm transition-colors">
+                    Media & Brand
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className="text-slate-400 hover:text-white text-sm transition-colors">
+                    Privacy
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 

@@ -86,9 +86,8 @@ export default function Header({ user, profile, leagues }: HeaderProps = {}) {
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-2">
               <Logo size="sm" />
-              <span className="text-xl font-[family-name:var(--font-bevan)] text-white">
-                <span className="hidden md:inline">Rumble Raffle</span>
-                <span className="md:hidden">RR</span>
+              <span className="text-xl font-[family-name:var(--font-bevan)] text-white hidden md:inline">
+                Rumble Raffle
               </span>
             </Link>
 
