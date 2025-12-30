@@ -70,7 +70,7 @@ export default async function HomePage() {
             className="absolute inset-0 w-full h-full object-cover opacity-20"
             aria-hidden="true"
           >
-            <source src="/ring2.mp4" type="video/mp4" />
+            <source src="/ring_prod.mp4" type="video/mp4" />
           </video>
           {/* Gradient overlay to ensure text readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 via-purple-900/50 to-gray-900/90"></div>
