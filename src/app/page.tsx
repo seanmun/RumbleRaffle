@@ -76,7 +76,7 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-gray-900/70 via-purple-900/50 to-gray-900/90"></div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 mt-[50px] md:mt-0">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 mt-[70px] md:mt-0">
           <div className="text-center">
             <h1 className="text-5xl md:text-7xl font-[family-name:var(--font-bevan)] mb-6 tracking-wider" style={{
               WebkitTextStroke: '1px #ca8a04',
