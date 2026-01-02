@@ -22,6 +22,23 @@ export default async function DashboardPage() {
     .eq('id', user.id)
     .single()
 
+  // If user profile doesn't exist, create it (fallback in case trigger isn't set up)
+  if (!profile && user) {
+    await supabase
+      .from('users')
+      .insert({
+        id: user.id,
+        email: user.email || '',
+        name: user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+        avatar_url: user.user_metadata?.avatar_url,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+
+    // Redirect to refresh the page with new profile
+    redirect('/dashboard')
+  }
+
   // Get user's leagues - simplified query
   const { data: leagues } = await supabase
     .from('leagues')
