@@ -28,6 +28,7 @@ export default function JoinLeaguePage() {
 
   const [league, setLeague] = useState<League | null>(null)
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [isCreator, setIsCreator] = useState(false)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -51,6 +52,15 @@ export default function JoinLeaguePage() {
         router.push(`/login?redirect=${encodeURIComponent(`/leagues/${leagueId}/join`)}`)
         return
       }
+
+      // Get user profile
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', currentUser.id)
+        .single()
+
+      setProfile(userProfile)
 
       // Load league
       const { data: leagueData, error: leagueError } = await supabase
@@ -144,7 +154,8 @@ export default function JoinLeaguePage() {
         .single()
 
       if (!existingMembership) {
-        const { error: membershipError } = await supabase
+        console.log('Creating membership for user:', user.id, 'league:', leagueId)
+        const { data: membershipData, error: membershipError } = await supabase
           .from('league_memberships')
           .insert({
             league_id: leagueId,
@@ -152,8 +163,13 @@ export default function JoinLeaguePage() {
             role: 'member',
             has_paid: league.buy_in === 0 // Auto-mark as paid if free
           })
+          .select()
 
-        if (membershipError) throw membershipError
+        if (membershipError) {
+          console.error('Membership insert error:', membershipError)
+          throw membershipError
+        }
+        console.log('Membership created:', membershipData)
       }
 
       // Create participants
@@ -166,11 +182,17 @@ export default function JoinLeaguePage() {
         total_score: 0
       }))
 
-      const { error: participantsError } = await supabase
+      console.log('Attempting to insert participants:', participantsToInsert)
+      const { data: participantsData, error: participantsError } = await supabase
         .from('participants')
         .insert(participantsToInsert)
+        .select()
 
-      if (participantsError) throw participantsError
+      if (participantsError) {
+        console.error('Participants insert error:', participantsError)
+        throw participantsError
+      }
+      console.log('Participants created:', participantsData)
 
       setSuccess(true)
       setTimeout(() => {
@@ -197,7 +219,7 @@ export default function JoinLeaguePage() {
   if (!league) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-        <Header />
+        <Header user={user} profile={profile} />
         <div className="max-w-2xl mx-auto py-12 px-4">
           <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg">
             League not found
@@ -209,7 +231,7 @@ export default function JoinLeaguePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
-      <Header />
+      <Header user={user} profile={profile} />
       <div className="max-w-2xl mx-auto py-12 px-4">
         {/* Page Header */}
         <div className="mb-8">
