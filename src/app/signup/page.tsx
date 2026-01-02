@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Header from '@/components/Header'
@@ -10,6 +10,9 @@ export const dynamic = 'force-dynamic'
 
 function SignupForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirect = searchParams.get('redirect') || '/dashboard'
+
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -24,11 +27,11 @@ function SignupForm() {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        router.push('/dashboard')
+        router.push(redirect)
       }
     }
     checkUser()
-  }, [supabase, router])
+  }, [supabase, router, redirect])
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,7 +46,7 @@ function SignupForm() {
         data: {
           name,
         },
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
       },
     })
 
@@ -51,8 +54,8 @@ function SignupForm() {
       setError(signUpError.message)
       setLoading(false)
     } else if (data.user) {
-      // Redirect to dashboard since email confirmation is disabled
-      router.push('/dashboard')
+      // Redirect to intended destination after signup
+      router.push(redirect)
     }
   }
 
@@ -63,7 +66,7 @@ function SignupForm() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?redirect=/dashboard`,
+        redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}`,
       },
     })
 
@@ -188,7 +191,7 @@ function SignupForm() {
 
         <p className="text-center text-sm text-gray-400">
           Already have an account?{' '}
-          <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+          <Link href={`/login?redirect=${encodeURIComponent(redirect)}`} className="text-purple-400 hover:text-purple-300 font-medium">
             Sign in
           </Link>
         </p>
@@ -210,5 +213,9 @@ function SignupForm() {
 }
 
 export default function SignupPage() {
-  return <SignupForm />
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignupForm />
+    </Suspense>
+  )
 }

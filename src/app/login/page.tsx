@@ -196,7 +196,7 @@ function LoginForm() {
 
         <p className="text-center text-sm text-gray-400">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-purple-400 hover:text-purple-300 font-medium">
+          <Link href={`/signup?redirect=${encodeURIComponent(redirect)}`} className="text-purple-400 hover:text-purple-300 font-medium">
             Sign up
           </Link>
         </p>

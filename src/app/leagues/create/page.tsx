@@ -100,8 +100,8 @@ export default function CreateLeaguePage() {
           role: 'manager'
         })
 
-      // Redirect to league setup page
-      router.push(`/leagues/${league.id}/setup`)
+      // Redirect to league page (creator will see it without joining)
+      router.push(`/leagues/${league.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create league')
       setLoading(false)

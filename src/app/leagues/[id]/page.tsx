@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import Header from '@/components/Header'
 import Badge from '@/components/Badge'
+import ShareButton from '@/components/ShareButton'
 
 export default async function LeaguePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient()
@@ -9,10 +10,16 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
 
   // Get user
   const { data: { user } } = await supabase.auth.getUser()
+
+  // If user is not authenticated, redirect to login with league URL as redirect
+  if (!user) {
+    redirect(`/login?redirect=${encodeURIComponent(`/leagues/${leagueId}`)}`)
+  }
+
   const { data: profile } = await supabase
     .from('users')
     .select('*')
-    .eq('id', user?.id || '')
+    .eq('id', user.id)
     .single()
 
   // Get league details
@@ -24,6 +31,37 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
 
   if (!league) {
     redirect('/dashboard')
+  }
+
+  // Check if user is a member of this league
+  const { data: membership } = await supabase
+    .from('league_memberships')
+    .select('*')
+    .eq('league_id', leagueId)
+    .eq('user_id', user.id)
+    .single()
+
+  // If not a member and not the creator, redirect to join page
+  if (!membership && league.creator_id !== user.id) {
+    redirect(`/leagues/${leagueId}/join`)
+  }
+
+  // Check if user has submitted their participants
+  const { data: userParticipants } = await supabase
+    .from('participants')
+    .select('*')
+    .eq('league_id', leagueId)
+    .eq('user_id', user.id)
+
+  // If member (or creator) but hasn't submitted participants yet, redirect to join page
+  // This allows both creators and members to add their entries through the same flow
+  if (membership && (!userParticipants || userParticipants.length === 0)) {
+    redirect(`/leagues/${leagueId}/join`)
+  }
+
+  // If creator but not a member yet (shouldn't happen, but handle it)
+  if (!membership && league.creator_id === user.id) {
+    redirect(`/leagues/${leagueId}/join`)
   }
 
   // Get participants with their entrants
@@ -71,7 +109,7 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">{league.name}</h1>
               <p className="text-gray-400">
                 {league.league_type === 'winner_takes_all' && 'Winner Takes All'}
@@ -79,16 +117,19 @@ export default async function LeaguePage({ params }: { params: Promise<{ id: str
                 {league.league_type === 'combined' && 'Combined Men\'s & Women\'s Events'}
               </p>
             </div>
-            <Badge
-              variant={
-                league.status === 'active' ? 'success' :
-                league.status === 'completed' ? 'neutral' :
-                'warning'
-              }
-              size="lg"
-            >
-              {league.status}
-            </Badge>
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+              <ShareButton leagueId={leagueId} leagueName={league.name} />
+              <Badge
+                variant={
+                  league.status === 'active' ? 'success' :
+                  league.status === 'completed' ? 'neutral' :
+                  'warning'
+                }
+                size="lg"
+              >
+                {league.status}
+              </Badge>
+            </div>
           </div>
         </div>
 
