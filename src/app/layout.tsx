@@ -101,7 +101,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${bevan.variable} antialiased bg-slate-950 text-white min-h-screen flex flex-col font-sans`}>
+      <body className={`${bevan.variable} antialiased bg-gray-900 text-white min-h-screen flex flex-col font-sans`}>
         <WebVitals />
         <ToastProvider>
           <main className="flex-1">
