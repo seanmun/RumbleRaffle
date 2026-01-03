@@ -146,12 +146,12 @@ export default function JoinLeaguePage() {
       }
 
       // Add user to league_memberships if not already there
-      const { data: existingMembership } = await supabase
+      const { data: existingMembership, error: membershipCheckError } = await supabase
         .from('league_memberships')
         .select('*')
         .eq('league_id', leagueId)
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       if (!existingMembership) {
         console.log('Creating membership for user:', user.id, 'league:', leagueId)
