@@ -154,6 +154,8 @@ export default function JoinLeaguePage() {
         .maybeSingle()
 
       console.log('Membership check result:', { existingMembership, membershipCheckError })
+      console.log('Current user ID:', user.id)
+      console.log('Current user email:', user.email)
 
       if (!existingMembership) {
         console.log('Creating membership for user:', user.id, 'league:', leagueId)
